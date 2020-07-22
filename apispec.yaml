@@ -1,0 +1,529 @@
+openapi: 3.0.0
+info:
+  title: docsis-pnm API
+  version: 0.0.0
+servers: 
+  - url: /
+paths:
+
+  /stats:
+    get:
+      tags:
+        - stats
+      responses:
+        200:
+          description: Some statistics. Some can be used for performance monitoring
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stats'
+                
+  /health/status:
+    get:
+      tags:
+        - stats
+      responses:
+        200:
+          description: |
+            Returns health status of the application. Use this for your load
+            balancer or monitoring system
+          content:
+            text/plain:
+              schema:
+                type: string
+                title: application status
+                description: Returns 'OK' if the application is up and running
+  /cmts:
+    get:
+      tags:
+        - CMTS
+      responses:
+        200:
+          description: List all CMT systems
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cmts'
+    post:
+      tags: 
+        - CMTS
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cmts'
+      responses:
+        201:
+          $ref: '#/components/responses/cmtsResponse'
+
+  /cmts/{cmtsId}:
+    get:
+      tags:
+        - CMTS
+      description: Retrieves information about the specified CMTS
+      parameters:
+        - $ref: '#/components/parameters/cmtsId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/Cmts'
+        404:
+          description: CMTS with the given ID does not exist
+    patch:
+      tags:
+        - CMTS
+        - Not implemented yet
+      parameters:
+        - $ref: '#/components/parameters/cmtsId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cmts'
+      responses:
+        204:
+          description: No content
+        
+  /cmts/{cmtsId}/modems:
+    get:
+      tags:
+        - CMTS
+        - Modem
+      description: Lists all known modems for this CMTS
+      parameters:
+        - $ref: '#/components/parameters/cmtsId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Modem'
+
+  /cmts/{cmtsId}/stats:
+    get:
+      tags:
+        - CMTS
+        - Not implemented yet
+      description: Current status and some statistics about the CMTS
+      parameters:
+        - $ref: '#/components/parameters/cmtsId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CmtsStats'
+
+  /modems:
+    get:
+      tags:
+        - Modem
+      description: Lists all known modems
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Modem'
+
+  /modems/{modemId}:
+    get:
+      tags:
+        - Modem
+      parameters:
+        - $ref: '#/components/parameters/modemId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Modem'
+        404:
+          description: Not found
+    patch:
+      tags:
+        - Modem
+        - Not implemented yet
+      parameters:
+        - $ref: '#/components/parameters/modemId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Modem'
+      responses:
+        200:
+          description: Update successful
+        404:
+          description: Not found
+        409:
+          $ref: '#/components/responses/validationError'
+    delete:
+      tags:
+        - Modem
+        - Not implemented yet
+      parameters:
+        - $ref: '#/components/parameters/modemId'
+      description: Delete the modem from the database. History data
+        IS NOT DELETED because this is a very I/O expensive operation.
+        History data deletion relies on database partitions.
+        If this modem is active on any CMTS it will be automatically created
+        at the next CMTS poll run.
+      responses:
+        200:
+          description: OK
+
+  /modems/{modemMac}/livestatus:
+    post:
+      tags:
+        - Modem
+        - Not implemented yet
+      parameters:
+        - $ref: '#/components/parameters/modemMac'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModemLiveStatus'
+
+  /modems/{modemMac}/downstream/latest:
+    get:
+      tags:
+        - Modem
+        - Not implemented yet
+      parameters:
+        - $ref: '#/components/parameters/modemMac'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownstreamHistory'
+            
+  /modems/{modemMac}/downstream/history/{fromTS}/{toTS}:
+    get:
+      tags:
+        - Modem
+      parameters:
+        - $ref: '#/components/parameters/modemMac'
+        - $ref: '#/components/parameters/fromTS'
+        - $ref: '#/components/parameters/toTS'
+
+      responses:
+        200:
+          headers:
+            X-Count:
+              $ref: '#/components/headers/X-Count'
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DownstreamHistory'
+
+components:
+
+  headers:
+  
+    X-Count:
+      description: Number of returned items
+      schema:
+        type: integer
+
+  responses:
+  
+    validationError:
+      description: ValidationError
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    cmtsResponse:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Cmts'
+        
+  parameters:
+    fromTS:
+      name: fromTS
+      in: path
+      required: true
+      description: Unix timestamp in seconds
+      schema:
+        type: integer
+        example: 1593791558
+        
+  
+    toTS:
+      name: toTS
+      in: path
+      required: true
+      description: Unix timestamp in seconds
+      schema:
+        type: integer
+        example: 1593795158
+
+    date:
+      name: date
+      in: path
+      required: true
+      schema:
+        type: string
+        format: date
+        example: 2020-06-20
+
+    cmtsId:
+      name: cmtsId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    
+    modemId:
+      name: modemId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Modem identifier. Can be the MAC address, database row ID
+        or IP address of the modem
+    modemMac:
+      name: modemMac
+      in: path
+      required: true
+      schema:
+        type: string
+        format: macaddr
+
+  schemas:
+        
+    Error:
+      type: object
+      readOnly: true
+      properties:
+        message:
+          type: string
+        field_errors:
+          type: object
+          description: Fields with error message
+          example: {'hostname': 'invalid hostname'}
+
+          
+    Cmts:
+      type: object
+      required:
+        - hostname
+      properties:
+        cmts_id:
+          type: integer
+          format: uint32
+          example: 1
+          readOnly: true
+        hostname:
+          description: Hostname or IP address
+          type: string
+          example: cmts-rosenheim.example
+        snmp_community:
+          type: string
+          example: public
+          nullable: true
+          description: Override default SNMP community from config file.
+            Returns the overridden community string if set. Set to `null` to
+            use the default community.
+        snmp_community_modem:
+          type: string
+          example: public
+          nullable: true
+          description: Override the default SNMP community for modems.
+            Returns the overridden community string if set. Set to `null` to
+            use the default community.
+        disabled:
+          type: boolean
+          example: false
+          nullable: false
+          description: Set to `true` to disable polling of that CMTS
+        poll_interval:
+          type: integer
+          example: 60
+          nullable: false
+          description: Poll interval of the CMTS. Defaults to 60 if < 60
+          
+    CmtsStats:
+      type: object
+      readOnly: true
+      description: Status information about the CMTS
+      properties:
+        modems_online:
+          type: integer
+          format: int32
+          example: 4228
+          description: Modems the CMTS considers online
+        modems_offline:
+          type: integer
+          format: int32
+          example: 112
+          description: Modems the CMTS considers offline
+        last_seen:
+          type: string
+          format: date-time
+          description: Last successful data polling
+
+    Modem:
+      properties:
+        modem_id:
+          type: integer
+          format: uint64
+          readOnly: true
+          example: 1
+        cmts_id:
+          type: integer
+          format: int32
+          readOnly: true
+          example: 1
+          description: The ID of the CMTS the modem was last seen on
+        mac:
+          type: string
+          format: macaddr
+          readOnly: true
+          description: MAC address in Unix format (00:00:00:00:00:00)
+          example: 00:00:00:00:00:00
+        sysdescr:
+          type: string
+          readOnly: true
+          description: Sysdescr as returned via SNMP
+          example: 'FRITZ!Box Cable <<HW_REV: 233.8; VENDOR: AVM GmbH; BOOTR: 1.3465; SW_REV: 161.07.19-77042; MODEL: 6591>>'
+        ipaddr:
+          type: string
+          readOnly: true
+          description: IP address (IPv4 or IPv6) of the cable modem part of the modem
+        snmp_index:
+          type: integer
+          format: int32
+          description: SNMP index on the CMTS for that modem
+          readOnly: true
+        docsis_version:
+          type: string
+          enum:
+            - 'docs_10'
+            - 'docs_11'
+            - 'docs_20'
+            - 'docs_21'
+            - 'docs_31'
+            - 'unknown'
+          readOnly: true
+          description: DOCSIS version this modem is running on
+    
+    ModemLiveStatus:
+      properties:
+        uptime:
+          type: integer
+          format: int32
+          description: Uptime in seconds
+          example: 3601
+        sysdescr:
+          type: string
+          description: Sysdescr as returned via SNMP
+          example: 'FRITZ!Box Cable <<HW_REV: 233.8; VENDOR: AVM GmbH; BOOTR: 1.3465; SW_REV: 161.07.19-77042; MODEL: 6591>>'
+
+    DownstreamChannel:
+      properties:
+        freq:
+          type: integer
+          format: int32
+          description: Downstream channel frequency in Hertz
+          example: 800000000
+        pwr:
+          type: integer
+          format: int32
+          description: Receive power in tenth dbmV (you have to divide the value by ten)
+          example: -12
+        snr:
+          type: integer
+          format: int32
+          description: Signal to noise ratio (SNR) in tenth dB (you have to divide the value by ten)
+          example: 401
+        mrefl:
+          type: integer
+          format: int32
+          example: -30
+          description: Microreflections in negative dB
+        unerr:
+          type: integer
+          format: uint64
+          description: Number of received unerrored codewords
+        corr:
+          type: integer
+          format: uint64
+          description: Number of received corrected codewords
+        err:
+          type: integer
+          format: uint64
+          description: Number of erroneous codewords
+        mod:
+          type: integer
+          format: int32
+          description: Modulation of the channel
+
+    DownstreamHistory:
+      properties:
+        ts:
+          type: integer
+          format: int64
+          description: Unix timestamp in full seconds
+        ds:
+          type: array
+          items:
+            $ref: '#/components/schemas/DownstreamChannel'
+    
+    Stats:
+      properties:
+        queue_length:
+          type: integer
+          description: Number of modems waiting for polling. The queue can get
+            full if the average poll time increases. If there are a lot of
+            modems with timeouts, the queue can get full very fast.
+        db_queue_length:
+          type: integer
+          description: Number of modem datasets waiting for insert. This
+            usually should be zero.
+        polls_successful:
+          type: integer
+          description: Number of successful modem polls since startup
+        polls_errors:
+          type: integer
+          description: Number of failed modem polls since startup
+        modems_online:
+          type: integer
+          description: Number of online modems. This value can be a bit
+            misleading, because all modems for scheduling
+            are retrieved directly from the CMTS and not from the database.
+            In the startup phase this value is lower than the real modem count
+            and this value might not be a good value for monitoring purposes.
+        modems_offline:
+          type: integer
+          description: Number of offline modems. This value can be a bit
+            misleading. See `modems_online` for details.
+        active_cmts_count:
+          type: integer
+          description: Number of CMT systems active for polling.

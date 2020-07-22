@@ -1,0 +1,6 @@
+.idea
+.vscode
+*~
+docsis-pnm.toml
+/cmd/docsis-pnm/docsis-pnm
+/cmd/test1

@@ -1,0 +1,30 @@
+[snmp]
+# SNMP community. Can be overwritten in the database for every modem
+# Default: "public"
+# community = "public"
+
+# Retries before considering SNMP request as failed
+# Default: 3
+# retries = 3
+
+# Timeout before considering SNMP request as failed
+# Maximum time spent trying = retries * timeout
+# Default: 5
+# timeout = 5
+
+# Poll modem every modempollinterval seconds
+# Default: 900
+# modempollinterval = 900
+
+# Start number of workers to poll modem data
+# Default: 200
+# workercount = 200
+
+[db]
+connstr = "postgres://docsispnm:insecurepassword@db/docsispnm?sslmode=disable"
+
+# Modem data is "piped" into the database. Do a commit every commitinterval
+# seconds
+# Default: 60
+# commitinterval = 60
+
