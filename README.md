@@ -25,8 +25,6 @@ Tested on
 ---
 * EuroDOCSIS
 * Cisco cBR-8
-* A variety of cable modems, notably a variety of AVM Fritz!Box modems and
-  Teleste RF amplifiers.
   
 Tested modems
 ---
@@ -43,7 +41,6 @@ Tested modems
   * DCV8400
   * TDS 1030
   * TDS 10
-
 
 Tested amplifiers
 ---
