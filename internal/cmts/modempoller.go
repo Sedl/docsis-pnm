@@ -4,11 +4,10 @@ import (
 	"net"
 )
 
-func (cmts *Cmts) GetModemCommunity(mac net.HardwareAddr) string {
+func (cmts *Cmts) GetModemCommunity(_ net.HardwareAddr) string {
 	comm := cmts.dbRec.SNMPModemCommunity
 	if comm == "" {
-		comm = "public"
+		comm = cmts.config.Snmp.Community
 	}
 	return comm
 }
-

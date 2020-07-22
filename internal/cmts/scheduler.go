@@ -72,7 +72,7 @@ func (cmts *Cmts) updateModemList() error {
 	atomic.StoreInt32(&cmts.modemsOffline, mOffline)
 	atomic.StoreInt32(&cmts.modemsOnline, mOnline)
 
-	log.Printf("debug: fetching modems (%d online, %d offline) from CMTS %s finished. Time: (%s SNMP, %s DB, %s total)", mOnline, mOffline, cmts.ValueOfHostname(), tsnmp, tDb, tsnmp + tDb)
+	log.Printf("debug: fetching modems (%d online, %d offline) from CMTS %s finished. Time: (%s SNMP, %s DB, %s total)", mOnline, mOffline, cmts.ValueOfHostname(), tsnmp, tDb, tsnmp+tDb)
 	return nil
 }
 
@@ -92,9 +92,10 @@ func (cmts *Cmts) ModemPollTimer() {
 
 				request := &types.ModemPollRequest{
 					Hostname:  mdm.IP.String(),
+					Community: cmts.GetModemCommunity(mdm.MAC),
 					// Community: config.Configuration.Snmp.Community,
 					CmtsId:    cmts.dbRec.Id,
-					Mac: mdm.MAC,
+					Mac:       mdm.MAC,
 					SnmpIndex: mdm.Index,
 				}
 				// log.Printf("debug: scheduling modem %s for polling\n", request.Mac.String())

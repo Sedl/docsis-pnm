@@ -20,13 +20,13 @@ type Poller struct {
 	dbModemUpdater types.ModemUpdaterInterface
 }
 
-func NewPoller (config *config.Snmp, modemUpdater types.ModemUpdaterInterface) *Poller {
+func NewPoller(config *config.Snmp, modemUpdater types.ModemUpdaterInterface) *Poller {
 	return &Poller{
-		requestChan: make(chan *types.ModemPollRequest, 10000),
-		config:      config,
+		requestChan:    make(chan *types.ModemPollRequest, 10000),
+		config:         config,
 		dbModemUpdater: modemUpdater,
-		WorkerCount: config.WorkerCount,
-		ModemDataSink: make(chan *types.ModemData, 10000),
+		WorkerCount:    config.WorkerCount,
+		ModemDataSink:  make(chan *types.ModemData, 10000),
 	}
 }
 
@@ -60,7 +60,7 @@ func (p *Poller) collector() {
 		case request := <-p.requestChan:
 			// log.Printf("debug: collecting data from modem %s (%s)\n", request.Mac.String(), request.Hostname)
 			// TODO SNMP Community aus der Datenbank holen, ggf. schon in den Request packen
-			mdata, err := Poll(request.Hostname, request.Mac, p.config.Community)
+			mdata, err := Poll(request.Hostname, request.Mac, request.Community)
 			// TODO error an mdata struct weitergeben um Fehlerdiagnose zu ermöglichen und um Fehler auswerten zu können
 			if err != nil {
 				log.Printf("Error while collecting data from modem (%s) (%q)", request.Hostname, err)
@@ -76,10 +76,10 @@ func (p *Poller) collector() {
 			mdata.Mac = request.Mac
 			mdata.SnmpIndex = request.SnmpIndex
 			mdata.CmtsDbId = request.CmtsId
-//			if mdata.Err != nil {
-//				log.Printf("Error while collecting data from modem (%s) (%q): %s", request.Hostname, mdata.Sysdescr, mdata.Err)
-//				atomic.AddUint64(&p.statError, 1)
-//			} else {
+			//			if mdata.Err != nil {
+			//				log.Printf("Error while collecting data from modem (%s) (%q): %s", request.Hostname, mdata.Sysdescr, mdata.Err)
+			//				atomic.AddUint64(&p.statError, 1)
+			//			} else {
 
 			// insertModemData(mdata, *p.ModemDataSink)
 			err = p.dbModemUpdater.UpdateModemData(mdata)
@@ -101,4 +101,3 @@ func (p *Poller) Run() {
 func (p *Poller) StopCollector() {
 	close(p.requestChan)
 }
-

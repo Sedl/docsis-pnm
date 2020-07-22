@@ -18,9 +18,8 @@ type ModemData struct {
 	Errors          []string `json:"errors"`
 	SnmpIndex       int32
 	DocsisVersion   uint32
-	DSPrimary		int32
+	DSPrimary       int32
 	OfdmDownstreams *OfdmDownstreamHistory
-
 }
 
 type ModemPollRequest struct {
@@ -30,4 +29,5 @@ type ModemPollRequest struct {
 	CmtsId    uint32
 	Mac       net.HardwareAddr
 	SnmpIndex int32
+	Community string
 }
