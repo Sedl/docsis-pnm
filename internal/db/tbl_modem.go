@@ -152,15 +152,15 @@ func modemDiff(old, new *types.ModemRecord) map[string]interface{} {
 		changes["docsis_ver"] = new.DocsisVersion
 	}
 
-	if new.DSPrimary != old.DSPrimary {
+	if new.DSPrimary != 0 && new.DSPrimary != old.DSPrimary {
 		changes["ds_primary"] = new.DSPrimary
 	}
 
-	if new.CmtsDsIndex != old.CmtsDsIndex {
+	if new.CmtsDsIndex != 0 && new.CmtsDsIndex != old.CmtsDsIndex {
 		changes["cmts_ds_idx"] = new.CmtsDsIndex
 	}
 
-	if new.CmtsUsIndex != old.CmtsUsIndex {
+	if new.CmtsUsIndex != 0 && new.CmtsUsIndex != old.CmtsUsIndex {
 		changes["cmts_us_idx"] = new.CmtsUsIndex
 	}
 

@@ -32,11 +32,11 @@ func (db *Postgres) UpdateModemFromModemInfo(minfo *types.ModemInfo) error {
 
     changes := make(RowChangeList)
 
-    if current.CmtsUsIndex != minfo.UpIfIndex {
+    if current.CmtsUsIndex != 0 && current.CmtsUsIndex != minfo.UpIfIndex {
         changes["cmts_us_idx"] = minfo.UpIfIndex
     }
 
-    if current.CmtsDsIndex != minfo.DownIfIndex {
+    if current.CmtsDsIndex != 0 && current.CmtsDsIndex != minfo.DownIfIndex {
         changes["cmts_ds_idx"] = minfo.DownIfIndex
     }
 
