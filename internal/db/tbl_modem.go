@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"github.com/sedl/docsis-pnm/internal/types"
 	"net"
-	"sync"
 )
 
 const insertModemQueryString = "INSERT INTO modem (mac, sysdescr, ip, cmts_id, snmp_index, docsis_ver, ds_primary, cmts_ds_idx, cmts_us_idx) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id"
@@ -180,41 +179,10 @@ func (db *Postgres) ModemUpdate(record *types.ModemRecord) (int, error) {
 	}
 	changelist := modemDiff(have, record)
 	changes := len(changelist)
-	/*
-	if changes > 0 {
-		log.Printf("debug: updating modem %s, %d changes\n", record.Mac.String(), changes)
-	}
-	 */
+
 	err = tableUpdate(conn, modemUpdate, have.ID, changelist)
 	if err != nil {
 		return 0, err
 	}
 	return changes, nil
-}
-
-type ModemCache struct {
-	cache map[string]*types.ModemRecord
-	lock sync.RWMutex
-}
-
-func NewModemCache() *ModemCache {
-	return &ModemCache{
-		cache: make(map[string]*types.ModemRecord),
-	}
-}
-
-func (mcache *ModemCache) Get(mac net.HardwareAddr) *types.ModemRecord {
-	mcache.lock.RLock()
-	defer mcache.lock.RUnlock()
-
-	if val, ok := mcache.cache[mac.String()]; ok {
-		return val
-	}
-	return nil
-}
-
-func (mcache *ModemCache) Update(rec *types.ModemRecord) {
-	mcache.lock.Lock()
-	mcache.cache[rec.Mac.String()] = rec
-	mcache.lock.Unlock()
 }
