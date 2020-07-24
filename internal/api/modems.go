@@ -5,8 +5,8 @@ import (
 	db2 "github.com/sedl/docsis-pnm/internal/db"
 	"github.com/sedl/docsis-pnm/internal/modem"
 	"github.com/sedl/docsis-pnm/internal/types"
-	"net"
 	"net/http"
+	"regexp"
 	"strconv"
 )
 
@@ -55,29 +55,44 @@ func (api *Api) modemsAll(w http.ResponseWriter, r *http.Request) {
 	api.modemsBy(w, "", false)
 }
 
+func detectModemIdUrlColumn(modemId string) (string, error) {
+	matched , err := regexp.MatchString("^[0-9]+$", modemId)
+	if err != nil {
+		return "", err
+	}
+	if matched {
+		return "id", nil
+	}
+
+	matched, err = regexp.MatchString("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$", modemId)
+	if err != nil {
+		return "", err
+	}
+	if matched {
+		return "ip", nil
+	}
+
+	matched, err = regexp.MatchString("^[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}$", modemId)
+	if err != nil {
+		return "", err
+	}
+	if matched {
+		return "mac", nil
+	}
+
+	return "", ErrorInvalidModemId
+}
+
 func (api *Api) modemsById(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["modemId"]
-	mid, err := strconv.ParseUint(id, 10, 64)
+    id := mux.Vars(r)["modemId"]
+    where, err := detectModemIdUrlColumn(id)
 	if err != nil {
-		HandleServerError(w, err)
+		HandleBadRequest(w, err)
 		return
 	}
-
-	api.modemsBy(w, "id = $1", true, mid)
+	api.modemsBy(w, where + " = $1", true, id)
 }
 
-func (api *Api) modemsByMac(w http.ResponseWriter, r *http.Request) {
-	mac := mux.Vars(r)["modemMac"]
-	hwaddr, err := net.ParseMAC(mac)
-	if err != nil {
-		// invalid MAC address
-		// we don't care, just return a 404
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	api.modemsBy(w, "mac = $1", true, hwaddr.String())
-}
 
 func (api *Api) modemsByCmtsId(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["cmtsId"]
@@ -88,19 +103,6 @@ func (api *Api) modemsByCmtsId(w http.ResponseWriter, r *http.Request) {
 	}
 
 	api.modemsBy(w, "cmts_id = $1", false, cmtsId)
-}
-
-func (api *Api) modemsByIp(w http.ResponseWriter, r* http.Request) {
-	ipstr := mux.Vars(r)["modemIp"]
-	ip := net.ParseIP(ipstr)
-
-	if ip == nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	api.modemsBy(w, "ip = $1", true, ip.String())
-
 }
 
 func (api *Api) modemsBy(w http.ResponseWriter, where string, single bool, args ...interface{}) {

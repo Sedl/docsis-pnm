@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: docsis-pnm API
-  version: 0.0.0
+  version: 0.0.1
 servers: 
   - url: /
 paths:
@@ -201,13 +201,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModemLiveStatus'
 
-  /modems/{modemMac}/downstream/latest:
+  /modems/{modemId}/downstream/latest:
     get:
       tags:
         - Modem
-        - Not implemented yet
       parameters:
-        - $ref: '#/components/parameters/modemMac'
+        - $ref: '#/components/parameters/modemId'
       responses:
         200:
           description: OK
@@ -216,12 +215,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/DownstreamHistory'
             
-  /modems/{modemMac}/downstream/history/{fromTS}/{toTS}:
+  /modems/{modemId}/downstream/history/{fromTS}/{toTS}:
     get:
       tags:
         - Modem
       parameters:
-        - $ref: '#/components/parameters/modemMac'
+        - $ref: '#/components/parameters/modemId'
         - $ref: '#/components/parameters/fromTS'
         - $ref: '#/components/parameters/toTS'
 

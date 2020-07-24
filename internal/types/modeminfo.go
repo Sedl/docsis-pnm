@@ -4,23 +4,6 @@ import (
 	"net"
 )
 
-//type MacAddress struct {
-//	mac *net.HardwareAddr
-//}
-//
-
-/*
-type MacAddress net.HardwareAddr
-
-func (mac MacAddress) String() string {
-	return net.HardwareAddr(mac).String()
-}
-
-func (mac *MacAddress) MarshalJSON() ([]byte, error) {
-	return json.Marshal(mac.String())
-}
-*/
-
 type ModemInfo struct {
 	Index          int32            `json:"snmp_index"`
 	MAC            net.HardwareAddr `json:"mac_address,string"`
