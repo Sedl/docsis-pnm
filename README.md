@@ -3,6 +3,8 @@ What is this?
 
 This project aims to be a tool for helping with DOCSIS proactive network maintenance (PNM).
 
+See the [API specification](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Sedl/docsis-pnm/master/apispec.yaml) to get an overview what is possible.
+
 Features
 ---
 * PostgreSQL database for history data with automatic table partitioning
