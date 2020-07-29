@@ -129,9 +129,12 @@ func tableUpdate(conn *sql.DB, updateQuery string, whereValue interface{}, chang
 		i++
 	}
 
+	if len(changes) == 0 {
+		return nil
+	}
+
 	colstr := strings.Join(cols, ", ")
 	updateStr := fmt.Sprintf(updateQuery, colstr)
-
 	_, err := conn.Exec(updateStr, values...)
 
 	return err
