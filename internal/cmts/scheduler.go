@@ -76,7 +76,7 @@ func (cmts *Cmts) updateModemList() error {
 	return nil
 }
 
-func (cmts *Cmts) ModemPollTimer() {
+func (cmts *Cmts) ModemScheduler() {
 
 	log.Printf("debug: starting modem poll timer for CMTS %s\n", cmts.dbRec.Hostname)
 	defer log.Printf("debug: modem poll timer for CMTS %s exited\n", cmts.dbRec.Hostname)
@@ -104,6 +104,11 @@ func (cmts *Cmts) ModemPollTimer() {
 					log.Printf("Can't schedule modem %s for polling. Modem poll queue is full. Consider increasing number of poll workers", bucket[pos][i].MAC)
 				}
 			}
+		case _, ok := <- cmts.stopChannel:
+			if ! ok {
+				return
+			}
+
 		}
 	}
 }

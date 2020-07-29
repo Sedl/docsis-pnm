@@ -176,9 +176,11 @@ func (cmts *Cmts) GoCMTSPoller() {
 	ticker := time.NewTicker(pollInterval)
 	for {
 		select {
-		case <-cmts.stopChannel:
-			log.Printf("Stopping CMTS poller for %q", cmts.dbRec.Hostname)
-			return
+		case _, ok := <-cmts.stopChannel:
+			if ! ok {
+				log.Printf("Stopping CMTS poller for %q", cmts.dbRec.Hostname)
+				return
+			}
 		case <-ticker.C:
 			err := cmts.snmpCollector()
 			if err != nil {

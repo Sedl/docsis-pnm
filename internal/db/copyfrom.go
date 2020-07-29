@@ -46,7 +46,11 @@ func (m *CopyFrom) Run() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			case data := <- m.valueChan:
+			case data, ok := <- m.valueChan:
+				if ! ok {
+					m.commit()
+					return
+				}
 				_, err := m.Stmt.Exec(data...)
 				if err != nil {
 					log.Printf("error: CopyFrom insertion failed: %v\n", m.query)
@@ -60,12 +64,15 @@ func (m *CopyFrom) Run() {
 	}
 }
 
+func (m *CopyFrom) Stop() {
+	close(m.valueChan)
+}
 
 func (m *CopyFrom) Insert(values ...interface{}) {
 	m.valueChan <- values
 }
 
-func (m *CopyFrom) Commit() error {
+func (m *CopyFrom) commit() {
 	_, err := m.Stmt.Exec()
 	if err != nil {
 		log.Printf("Error while flushing \"COPY FROM\": %s\n", err)
@@ -78,9 +85,16 @@ func (m *CopyFrom) Commit() error {
 	if err != nil {
 		log.Printf("Error while commiting: %s\n", err)
 	}
+}
+
+func (m *CopyFrom) Commit() error {
+
+    m.commit()
 
 	retries := 0
 	retryAfter := time.Second * 5
+	var err error
+
 	for {
 		// New database
 		m.tx, err = m.db.Begin()

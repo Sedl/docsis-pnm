@@ -3,13 +3,13 @@ package cmts
 import (
 	"github.com/sedl/docsis-pnm/internal/config"
 	"github.com/sedl/docsis-pnm/internal/db"
-	"github.com/sedl/docsis-pnm/internal/types"
-	"sync/atomic"
 	"github.com/sedl/docsis-pnm/internal/snmp"
+	"github.com/sedl/docsis-pnm/internal/types"
 	"github.com/soniah/gosnmp"
 	"log"
 	"net"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -23,12 +23,12 @@ type Cmts struct {
 	DBBackend     types.DbInterface
 	upstreamCache *db.CMTSUpstreamCache
 	poller        types.ModemPollWorkerInterface
-	dbRec types.CMTSRecord
-	stopChannel	chan struct{}
-	modemsOnline int32
+	dbRec         types.CMTSRecord
+	stopChannel   chan struct{}
+	modemsOnline  int32
 	modemsOffline int32
-
 	config        *config.Config
+	stopWg        *sync.WaitGroup
 }
 
 func (cmts *Cmts) ValueOfModemsOnline() int32 {
@@ -46,8 +46,9 @@ func NewCmts(dbRec *types.CMTSRecord, dbInterface types.DbInterface, modemPoller
 		poller:            modemPoller,
 		config:            config,
 		CmtsModemInfoSink: make(chan *types.ModemInfo, 100000),
-		dbRec: *dbRec,
-		stopChannel: make(chan struct{}),
+		dbRec:             *dbRec,
+		stopChannel:       make(chan struct{}),
+		stopWg:            &sync.WaitGroup{},
 	}
 
 	cmts.Snmp = cmts.NewGoSNMP()
@@ -55,16 +56,16 @@ func NewCmts(dbRec *types.CMTSRecord, dbInterface types.DbInterface, modemPoller
 	return cmts, nil
 }
 
-func (cmts *Cmts) NewGoSNMP() *gosnmp.GoSNMP{
+func (cmts *Cmts) NewGoSNMP() *gosnmp.GoSNMP {
 	return &gosnmp.GoSNMP{
-		Target:         cmts.dbRec.Hostname,
-		Community:      cmts.dbRec.SNMPCommunity,
-		Version:        gosnmp.Version2c,
-		Timeout:        time.Duration(cmts.config.Snmp.Timeout) * time.Second,
-		Port:           161,
-		MaxOids:        1,
-		Retries:        cmts.config.Snmp.Retries,
-		MaxRepetitions: 30,
+		Target:             cmts.dbRec.Hostname,
+		Community:          cmts.dbRec.SNMPCommunity,
+		Version:            gosnmp.Version2c,
+		Timeout:            time.Duration(cmts.config.Snmp.Timeout) * time.Second,
+		Port:               161,
+		MaxOids:            1,
+		Retries:            cmts.config.Snmp.Retries,
+		MaxRepetitions:     30,
 		ExponentialTimeout: false,
 	}
 }
@@ -99,14 +100,21 @@ func (cmts *Cmts) Run() error {
 	if err != nil {
 		return err
 	}
-	go func () {
-		if cmts.modemBucket == nil {
-			cmts.modemBucket = NewModemBucket(cmts.ValueOfModemPollInterval())
-		}
-		go cmts.ModemPollTimer()
+
+	if cmts.modemBucket == nil {
+		cmts.modemBucket = NewModemBucket(cmts.ValueOfModemPollInterval())
+	}
+
+	go func() {
+		cmts.stopWg.Add(1)
+		defer cmts.stopWg.Done()
+		cmts.ModemScheduler()
+	}()
+
+	go func() {
 
 		cmts.GoCMTSPoller()
-		defer func () {
+		defer func() {
 			err := cmts.Snmp.Conn.Close()
 			if err != nil {
 				log.Printf("error: can't close SNMP connection for CMTS %s: %v\n", cmts.dbRec.Hostname, err)
@@ -168,9 +176,11 @@ var modemOids = []string{
 
 var nullIP = net.IP{0, 0, 0, 0}
 
-
 func (cmts *Cmts) Stop() {
 	close(cmts.stopChannel)
+	log.Printf("shutting down CMTS process \"%s\"\n", cmts.ValueOfHostname())
+	cmts.stopWg.Wait()
+	log.Printf("shutdown of CMTS process \"%s\" complete\n", cmts.ValueOfHostname())
 }
 
 func (cmts *Cmts) ListModems() (modemlist map[int]*types.ModemInfo, err error) {

@@ -13,7 +13,7 @@ type Poller struct {
 	WorkerCount    int
 	requestChan    chan *types.ModemPollRequest
 	ModemDataSink  chan *types.ModemData
-	wg             sync.WaitGroup
+	wg             *sync.WaitGroup
 	statError      uint64
 	statOK         uint64
 	config         *config.Snmp
@@ -27,6 +27,7 @@ func NewPoller(config *config.Snmp, modemUpdater types.ModemUpdaterInterface) *P
 		dbModemUpdater: modemUpdater,
 		WorkerCount:    config.WorkerCount,
 		ModemDataSink:  make(chan *types.ModemData, 10000),
+		wg: &sync.WaitGroup{},
 	}
 }
 
@@ -57,7 +58,10 @@ func (p *Poller) collector() {
 	for {
 		select {
 
-		case request := <-p.requestChan:
+		case request, ok := <-p.requestChan:
+			if ! ok {
+				return
+			}
 			// log.Printf("debug: collecting data from modem %s (%s)\n", request.Mac.String(), request.Hostname)
 			// TODO SNMP Community aus der Datenbank holen, ggf. schon in den Request packen
 			mdata, err := Poll(request.Hostname, request.Mac, request.Community)
@@ -68,7 +72,7 @@ func (p *Poller) collector() {
 				if mdata == nil {
 					continue
 				}
-				log.Printf("%#v\n", mdata)
+				// log.Printf("%#v\n", mdata)
 			} else {
 				atomic.AddUint64(&p.statOK, 1)
 			}
@@ -96,6 +100,11 @@ func (p *Poller) Run() {
 	for i := 0; i < p.WorkerCount; i++ {
 		go p.collector()
 	}
+}
+
+func (p *Poller) Stop() {
+	close(p.requestChan)
+	p.wg.Wait()
 }
 
 func (p *Poller) StopCollector() {

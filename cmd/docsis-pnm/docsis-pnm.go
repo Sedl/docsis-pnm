@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -10,6 +11,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 )
 
 func errorAndExit(err error) {
@@ -42,6 +46,40 @@ func main() {
 
 	router := mux.NewRouter().StrictSlash(true)
 	api.Register(router, cmtsManager)
-	log.Fatal(http.ListenAndServe(":8080", router))
+	server := &http.Server{
+		Addr:              ":8080",
+		Handler: router,
+	}
+
+	wg := registerExitHandler(cmtsManager, server)
+
+	go func() {
+		err = server.ListenAndServe()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	wg.Wait()
+
 }
 
+func registerExitHandler(manager *manager.Manager, server *http.Server) *sync.WaitGroup {
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		<-c
+	    defer wg.Done()
+		manager.Stop()
+		err := server.Shutdown(context.Background())
+		if err != nil {
+			log.Printf("error: http shutdown failed: %s\n", err.Error())
+		}
+	}()
+
+	return wg
+
+}

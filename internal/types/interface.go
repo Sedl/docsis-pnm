@@ -16,12 +16,6 @@ type ModemUpdaterInterface interface {
 	UpdateModemData(data *ModemData) error
 }
 
-/*
-type CmtsUpdaterInterface interface {
-	UpdateCmtsModemInfo(info *ModemInfo) error
-}
- */
-
 type ModemPollWorkerInterface interface {
 	Poll(request *ModemPollRequest) error
 }

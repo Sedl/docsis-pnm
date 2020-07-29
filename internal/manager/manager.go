@@ -99,6 +99,8 @@ func (m *Manager) AddAllCmtsFromDb() error {
 
 func (m *Manager) RemoveCmts(cmtsobj *cmts.Cmts) bool {
 
+	log.Printf("debug: stopping CMTS %s\n", cmtsobj.ValueOfHostname())
+
 	found := -1
 	var pos int
 	var cmtsL *cmts.Cmts
@@ -143,3 +145,14 @@ func (m *Manager) Run() error {
 
 }
 
+func (m *Manager) Stop() {
+	log.Println("debug: shutting down application")
+
+	for _, cmtss := range m.cmtsList {
+		m.RemoveCmts(cmtss)
+	}
+
+	m.modemPoller.Stop()
+	m.dbSyncer.Stop()
+
+}

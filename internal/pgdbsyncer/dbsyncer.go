@@ -7,6 +7,7 @@ import (
 	"github.com/sedl/docsis-pnm/internal/types"
 	"log"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -19,17 +20,19 @@ type PgDbSyncer struct {
 	copyUpstreams     *db.CopyFrom // modem_upstream table
 	copyDownstreams   *db.CopyFrom // modem_downstream table
 	copyModemdata     *db.CopyFrom // modem_data table
-	copyCmtsUpstreams *db.CopyFrom // modem_upstream_cmts
 	mdataChan         chan *types.ModemData
-	modemInfoChan     chan *types.ModemInfo
-	commitInterval	  time.Duration
+	mdataWg *sync.WaitGroup
+	commitInterval time.Duration
+	copyFromWg     *sync.WaitGroup
 }
 
 func NewPgDbSyncer(postgres *db.Postgres, commitInterval time.Duration) *PgDbSyncer {
 	return &PgDbSyncer{
-		backend:   postgres,
-		mdataChan: make(chan *types.ModemData, 100),
+		backend:        postgres,
+		mdataChan:      make(chan *types.ModemData, 100),
 		commitInterval: commitInterval,
+		copyFromWg:     &sync.WaitGroup{},
+		mdataWg: &sync.WaitGroup{},
 	}
 }
 
@@ -47,7 +50,12 @@ func (m *PgDbSyncer) Run() error {
 	if err != nil {
 		return err
 	}
-	go m.copyUpstreams.Run()
+
+	go func() {
+		m.copyFromWg.Add(1)
+		defer m.copyFromWg.Done()
+		m.copyUpstreams.Run()
+	}()
 
 	downstreamCopy := pq.CopyIn("modem_downstream",
 		"modem_id", "poll_time", "freq", "power", "snr", "microrefl", "unerroreds",
@@ -56,7 +64,11 @@ func (m *PgDbSyncer) Run() error {
 	if err != nil {
 		return err
 	}
-	go m.copyDownstreams.Run()
+	go func() {
+		m.copyFromWg.Add(1)
+		defer m.copyFromWg.Done()
+		m.copyDownstreams.Run()
+	}()
 
 	mdataCopy := pq.CopyIn("modem_data",
 		"modem_id", "poll_time", "error_timeout")
@@ -64,10 +76,29 @@ func (m *PgDbSyncer) Run() error {
 	if err != nil {
 		return err
 	}
-	go m.copyModemdata.Run()
+	go func() {
+		m.copyFromWg.Add(1)
+		defer m.copyFromWg.Done()
+		m.copyModemdata.Run()
+	}()
 
-	go m.updateModemData()
+	go func() {
+		m.mdataWg.Add(1)
+		defer m.mdataWg.Done()
+		m.updateModemData()
+	}()
 	return nil
+}
+
+func (m *PgDbSyncer) Stop() {
+
+	close(m.mdataChan)
+	m.mdataWg.Wait()
+
+	m.copyUpstreams.Stop()
+	m.copyDownstreams.Stop()
+	m.copyModemdata.Stop()
+	m.copyFromWg.Wait()
 }
 
 // insertUpstreamData inserts records into the
@@ -120,7 +151,10 @@ func (m *PgDbSyncer) updateModemData() {
 
 	for {
 		select {
-		case mdata := <-m.mdataChan:
+		case mdata, ok := <-m.mdataChan:
+			if ! ok {
+				return
+			}
 			err := m.backend.UpdateFromModemData(mdata)
 			if err != nil {
 				log.Printf("error: can't get modem data for updating: %v\n", err)
@@ -148,15 +182,6 @@ func (m *PgDbSyncer) insertDocsis31Downstreams(mdata *types.ModemData) {
 func (m *PgDbSyncer) UpdateModemData(mdata *types.ModemData) error {
 	select {
 	case m.mdataChan <- mdata:
-		return nil
-	default:
-		return ModemDataQueueFull
-	}
-}
-
-func (m *PgDbSyncer) UpdateCmtsModemInfo(minfo *types.ModemInfo) error {
-	select {
-	case m.modemInfoChan <- minfo:
 		return nil
 	default:
 		return ModemDataQueueFull

@@ -77,7 +77,7 @@ func (q *Query) Exec() error {
 
     where, values := concatWhere(q.conditions)
 
-    log.Printf("%#v", values)
+    // log.Printf("%#v", values)
 
     if where == "" {
         where = "true"
