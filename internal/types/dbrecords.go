@@ -22,7 +22,6 @@ type CMTSUpstreamRecord struct {
 	SNMPIndex   int32
 	Description string
 	Freq        int32
-	//	Modulation  int32
 	Alias       string
 	AdminStatus int32
 }

@@ -67,20 +67,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_modem_upstream ON modem_upstream (modem_id
 CREATE TABLE IF NOT EXISTS modem_upstream_def PARTITION OF modem_upstream DEFAULT;
 
 
-CREATE TABLE IF NOT EXISTS modem_upstream_cmts (
-    modem_id INTEGER,
-    poll_time BIGINT,
-    upstream_id INTEGER,
-    power_rx INTEGER,
-    status INTEGER,
-    unerroreds BIGINT,
-    correcteds BIGINT,
-    erroreds BIGINT
-) PARTITION BY RANGE (poll_time);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_modem_cmts ON modem_upstream_cmts (modem_id, poll_time);
-CREATE TABLE IF NOT EXISTS modem_upstream_cmts_def PARTITION OF modem_upstream_cmts DEFAULT;
-
-
 CREATE TABLE IF NOT EXISTS cmts_upstream (
     id SERIAL PRIMARY KEY,
     cmts_id INTEGER REFERENCES cmts (id) NOT NULL,

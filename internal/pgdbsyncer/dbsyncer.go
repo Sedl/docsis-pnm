@@ -20,10 +20,11 @@ type PgDbSyncer struct {
 	copyUpstreams     *db.CopyFrom // modem_upstream table
 	copyDownstreams   *db.CopyFrom // modem_downstream table
 	copyModemdata     *db.CopyFrom // modem_data table
+	copyModemUpstream *db.CopyFrom // cmts_upstream_history_modem
 	mdataChan         chan *types.ModemData
-	mdataWg *sync.WaitGroup
-	commitInterval time.Duration
-	copyFromWg     *sync.WaitGroup
+	mdataWg           *sync.WaitGroup
+	commitInterval    time.Duration
+	copyFromWg        *sync.WaitGroup
 }
 
 func NewPgDbSyncer(postgres *db.Postgres, commitInterval time.Duration) *PgDbSyncer {
@@ -32,7 +33,7 @@ func NewPgDbSyncer(postgres *db.Postgres, commitInterval time.Duration) *PgDbSyn
 		mdataChan:      make(chan *types.ModemData, 100),
 		commitInterval: commitInterval,
 		copyFromWg:     &sync.WaitGroup{},
-		mdataWg: &sync.WaitGroup{},
+		mdataWg:        &sync.WaitGroup{},
 	}
 }
 
@@ -82,6 +83,20 @@ func (m *PgDbSyncer) Run() error {
 		m.copyModemdata.Run()
 	}()
 
+	mdmCmtsUpstream := pq.CopyIn(
+		"cmts_upstream_history_modem",
+		"modem_id", "us_id", "poll_time", "power_rx", "snr",
+		"microrefl", "unerroreds", "correcteds", "erroreds")
+	m.copyModemUpstream, err = db.NewCopyFrom(mdmCmtsUpstream, conn, 10000, m.commitInterval)
+	if err != nil {
+		return err
+	}
+	go func() {
+		m.copyFromWg.Add(1)
+		defer m.copyFromWg.Done()
+		m.copyModemUpstream.Run()
+	}()
+
 	go func() {
 		m.mdataWg.Add(1)
 		defer m.mdataWg.Done()
@@ -98,10 +113,11 @@ func (m *PgDbSyncer) Stop() {
 	m.copyUpstreams.Stop()
 	m.copyDownstreams.Stop()
 	m.copyModemdata.Stop()
+	m.copyModemUpstream.Stop()
 	m.copyFromWg.Wait()
 }
 
-// insertUpstreamData inserts records into the
+// insertUpstreamData inserts records into the cmts_upstream_history table
 func (m *PgDbSyncer) insertUpstreamData(mdata *types.ModemData) {
 	usFreqList := make(map[int64]nothing)
 
@@ -152,7 +168,7 @@ func (m *PgDbSyncer) updateModemData() {
 	for {
 		select {
 		case mdata, ok := <-m.mdataChan:
-			if ! ok {
+			if !ok {
 				return
 			}
 			err := m.backend.UpdateFromModemData(mdata)
@@ -176,7 +192,6 @@ func (m *PgDbSyncer) insertDocsis31Downstreams(mdata *types.ModemData) {
 	}
 
 }
-
 
 // UpdateModemData updates the information in the database and inserts performance data
 func (m *PgDbSyncer) UpdateModemData(mdata *types.ModemData) error {

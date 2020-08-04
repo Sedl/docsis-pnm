@@ -157,6 +157,27 @@ func (cmts *Cmts) snmpCollector() error {
 	if err != nil {
 		log.Printf("Can't fetch modem list for CMTS %s. Reason: %s\n", cmts.dbRec.Hostname, err)
 	}
+
+	log.Printf("debug: fetching detailed modem upstream information")
+	err, mdmUpstreams := cmts.pollModemUpstreams()
+	if err != nil {
+		return err
+	}
+
+	i := 0
+	for _, mdm := range mdmUpstreams {
+		for _, us := range mdm {
+			// prevents inserting of erroneous records and offline modems (ModemId == 0)
+		    if us.UpstreamId == 0 || us.ModemId == 0 {
+		    	continue
+			}
+			cmts.dbSyncer.InsertCmtsModemUpstream(us)
+			i++
+		}
+	}
+
+	log.Printf("debug: inserted %d CMTS upstream records", i)
+
 	return nil
 }
 

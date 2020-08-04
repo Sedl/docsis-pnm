@@ -59,15 +59,11 @@ func (cmts *Cmts) updateModemList() error {
 
 	tDb := time.Since(tstart)
 
-	mlistMac := make(map[string]*types.ModemInfo)
-
-	for _, modem := range mlist {
-		mlistMac[modem.MAC.String()] = modem
-	}
 	cmts.lockModemBucket.Lock()
 	cmts.modemBucket = bucket
-	cmts.modemList = mlistMac
 	cmts.lockModemBucket.Unlock()
+
+	cmts.modemList.ReplaceMap(mlist)
 
 	atomic.StoreInt32(&cmts.modemsOffline, mOffline)
 	atomic.StoreInt32(&cmts.modemsOnline, mOnline)

@@ -27,7 +27,10 @@ func (db *Postgres) UpdateModemFromModemInfo(minfo *types.ModemInfo) error {
         if err != nil {
             return err
         }
+        minfo.DbId = rec.ID
         return nil
+    } else {
+        minfo.DbId = current.ID
     }
 
     changes := make(RowChangeList)

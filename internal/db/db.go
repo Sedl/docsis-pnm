@@ -12,33 +12,10 @@ import (
 	"time"
 )
 
-type ModemUpstreamCMTSRecord struct {
-	ID int
-	PollTime int64
-	UpstreamID int32
-	PowerRx int32
-	Status int32
-	Unerroreds uint64
-	Correcteds uint64
-	Erroreds uint64
-}
-
-type ModemUpstreamRecord struct {
-	ModemID int64
-	PollTime int64
-	Freq int32
-	Modulation uint32
-	TimingOffset uint32
-}
-
-
 type Postgres struct {
 	conn    *sql.DB
 	timeout time.Duration
 	config *config.Db
-
-	cacheCMTS *CMTSCache
-	modemUpstreamChan chan *ModemUpstreamRecord
 	modemDataChan chan *types.ModemData
 	connlock   sync.RWMutex
 }
@@ -49,11 +26,8 @@ func NewPostgres(cfg config.Db) (*Postgres, error) {
 
 	db := &Postgres{
 		timeout:           time.Second * 10,
-		cacheCMTS:         NewCMTSCache(),
-		modemUpstreamChan: make(chan *ModemUpstreamRecord, 100),
 		modemDataChan:     make(chan *types.ModemData, 10),
 		config:            &cfg,
-		// cacheModem:        NewModemCache(),
 	}
 	return db, nil
 }

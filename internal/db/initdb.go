@@ -16,16 +16,20 @@ const (
 var partitions = []string{
 	"CREATE TABLE IF NOT EXISTS modem_downstream_%d PARTITION OF modem_downstream FOR VALUES FROM (%d) TO (%d)",
 	"CREATE TABLE IF NOT EXISTS modem_upstream_%d PARTITION OF modem_upstream FOR VALUES FROM (%d) TO (%d)",
-	"CREATE TABLE IF NOT EXISTS modem_upstream_cmts_%d PARTITION OF modem_upstream_cmts FOR VALUES FROM (%d) TO (%d)",
 	"CREATE TABLE IF NOT EXISTS modem_data_%d PARTITION OF modem_data FOR VALUES FROM (%d) TO (%d)",
 	"CREATE TABLE IF NOT EXISTS cmts_upstream_history_%d PARTITION OF cmts_upstream_history FOR VALUES FROM (%d) TO (%d)",
 	"CREATE TABLE IF NOT EXISTS modem_ofdm_downstream_%d PARTITION OF modem_ofdm_downstream FOR VALUES FROM (%d) TO (%d)",
+	"CREATE TABLE IF NOT EXISTS cmts_upstream_history_modem_%d PARTITION OF cmts_upstream_history_modem FOR VALUES FROM (%d) TO (%d)",
 }
 
 type revUpgradeFunc = func (db *sql.DB) error
 
 
-var revisions = []revUpgradeFunc{rev0, rev1}
+var revisions = []revUpgradeFunc{
+	rev0,
+	rev1,
+	rev2,
+}
 
 func createPartitions(dbc *sql.DB, partStart int64, interval int64) error {
 

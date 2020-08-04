@@ -3,6 +3,7 @@ package cmts
 import (
 	"github.com/sedl/docsis-pnm/internal/config"
 	"github.com/sedl/docsis-pnm/internal/db"
+	"github.com/sedl/docsis-pnm/internal/pgdbsyncer"
 	"github.com/sedl/docsis-pnm/internal/snmp"
 	"github.com/sedl/docsis-pnm/internal/types"
 	"github.com/soniah/gosnmp"
@@ -18,7 +19,8 @@ type Cmts struct {
 	modemBucket       [][]*types.ModemInfo
 	CmtsModemInfoSink chan *types.ModemInfo
 	lockModemBucket   sync.RWMutex
-	modemList         map[string]*types.ModemInfo
+	//modemList         map[string]*types.ModemInfo
+	modemList         *types.ModemList
 
 	DBBackend     types.DbInterface
 	upstreamCache *db.CMTSUpstreamCache
@@ -29,6 +31,7 @@ type Cmts struct {
 	modemsOffline int32
 	config        *config.Config
 	stopWg        *sync.WaitGroup
+	dbSyncer	  *pgdbsyncer.PgDbSyncer
 }
 
 func (cmts *Cmts) ValueOfModemsOnline() int32 {
@@ -39,7 +42,13 @@ func (cmts *Cmts) ValueOfModemsOffline() int32 {
 	return atomic.LoadInt32(&cmts.modemsOffline)
 }
 
-func NewCmts(dbRec *types.CMTSRecord, dbInterface types.DbInterface, modemPoller types.ModemPollWorkerInterface, config *config.Config) (*Cmts, error) {
+func NewCmts(
+		dbRec *types.CMTSRecord,
+		dbInterface types.DbInterface,
+		modemPoller types.ModemPollWorkerInterface,
+		config *config.Config,
+		dbSyncer *pgdbsyncer.PgDbSyncer,
+		) (*Cmts, error) {
 	cmts := &Cmts{
 		upstreamCache:     db.NewCMTSUpstreamCache(),
 		DBBackend:         dbInterface,
@@ -49,6 +58,8 @@ func NewCmts(dbRec *types.CMTSRecord, dbInterface types.DbInterface, modemPoller
 		dbRec:             *dbRec,
 		stopChannel:       make(chan struct{}),
 		stopWg:            &sync.WaitGroup{},
+		dbSyncer:          dbSyncer,
+		modemList: 		   types.NewModemList(),
 	}
 
 	cmts.Snmp = cmts.NewGoSNMP()

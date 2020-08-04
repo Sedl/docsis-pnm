@@ -35,6 +35,8 @@ func ToInt64(result *gosnmp.SnmpPDU) (int64, error) {
 	switch result.Type {
 	case gosnmp.Integer:
 		return int64(result.Value.(int)), nil
+	case gosnmp.Counter32:
+		return int64(result.Value.(uint)), nil
 	case gosnmp.Counter64:
 		res := result.Value.(uint64)
 		if res > math.MaxInt64 {

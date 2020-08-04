@@ -38,6 +38,7 @@ func NewManager(config *config.Config) (*Manager, error){
 	log.Println("debug: connecting to database successful")
 
 	log.Println("debug: init database syncer")
+	// TODO move syncer into db struct
 	dbSyncer := pgdbsyncer.NewPgDbSyncer(pg, time.Duration(config.Db.CommitInterval) * time.Second)
 
 	// start modem poller goroutines
@@ -64,7 +65,7 @@ func (m *Manager) GetCmtsList() []*cmts.Cmts {
 }
 
 func (m *Manager) AddCMTS(cmtsrec *types.CMTSRecord) (*cmts.Cmts, error) {
-    cmtsobj, err := cmts.NewCmts(cmtsrec, m.db, m.modemPoller, m.config)
+    cmtsobj, err := cmts.NewCmts(cmtsrec, m.db, m.modemPoller, m.config, m.dbSyncer)
 	if err != nil {
 		return nil, err
 	}
