@@ -48,7 +48,7 @@ func main() {
 	api.Register(router, cmtsManager)
 	server := &http.Server{
 		Addr:              ":8080",
-		Handler: logRequest(router),
+		Handler: logMiddleware(cacheMiddleware(router)),
 	}
 
 	wg := registerExitHandler(cmtsManager, server)
@@ -64,7 +64,17 @@ func main() {
 
 }
 
-func logRequest(handler http.Handler) http.Handler {
+
+func cacheMiddleware(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Don't cache by default
+		w.Header().Set("Cache-Control", "no-cache")
+		handler.ServeHTTP(w, r)
+	})
+}
+
+
+func logMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
 		handler.ServeHTTP(w, r)

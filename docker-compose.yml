@@ -2,8 +2,8 @@ version: '2.4'
 services:
     pnm:
         image: docsis-pnm
-        ports:
-            - 127.0.0.1:8080:8080
+#        ports:
+#            - 127.0.0.1:8080:8080
         restart: unless-stopped
         depends_on:
             db:
@@ -18,6 +18,14 @@ services:
         environment:
             - POSTGRES_PASSWORD=insecurepassword
             - POSTGRES_USER=docsispnm
+
+    cache:
+        image: nginx-cache
+        environment:
+            - BACKEND=http://pnm:8080
+        restart: unless-stopped
+        ports:
+            - 127.0.0.1:8080:80
 
 volumes:
     db:

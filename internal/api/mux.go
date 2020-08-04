@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sedl/docsis-pnm/internal/manager"
 	"net/http"
+	"time"
 )
 
 type Api struct {
@@ -15,10 +16,17 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
+const cacheOffset = 3600
 
+func addCacheHeader(timestamp int64, w http.ResponseWriter) {
+	now := time.Now().Unix()
+	if now - cacheOffset > timestamp {
+		w.Header().Set("Cache-Control", "public,max-age=31536000,immutable")
+	}
+}
 
 func JsonResponse(w http.ResponseWriter, jsonobj interface{}) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(jsonobj)
 	if err != nil {
 		HandleServerError(w, err)

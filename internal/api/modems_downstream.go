@@ -29,8 +29,6 @@ JOIN
         ) 
 `
 
-// TODO implement caching using cache headers
-const cacheOffset = 3600
 
 type DownstreamHistory struct {
 	TS int64 `json:"ts"`
@@ -163,8 +161,9 @@ func (api *Api) modemsDownstreamHistory(w http.ResponseWriter, r *http.Request) 
 		HandleServerError(w, err)
 		return
 	}
-	hist, _ := history.([]*DownstreamHistory)
 
+	addCacheHeader(to, w)
+	hist, _ := history.([]*DownstreamHistory)
 	w.Header().Set("X-Count", strconv.Itoa(len(hist)))
 	JsonResponse(w, hist)
 }

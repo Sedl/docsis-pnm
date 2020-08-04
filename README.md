@@ -7,10 +7,12 @@ See the [API specification](https://petstore.swagger.io/?url=https://raw.githubu
 
 Features
 ---
-* PostgreSQL database for history data with automatic table partitioning
-* Collects downstream and upstream history directly from the modem via SNMP
-* Collects modem information from CMTS via SNMP
 * RESTful API
+* PostgreSQL database for history data with automatic table partitioning
+* Collects downstream history directly from the modem via SNMP
+* Collects upstream history directly from the CMTS
+* Appropriate caching headers for caching history data older than one hour. See /nginx-cache and /docker-compose.yml for more details.
+* Cloud native [Docker images](https://hub.docker.com/r/stephan256/docsis-pnm)
 
 Requirements
 ---
@@ -23,7 +25,7 @@ Planned features
 * Grafana integration for up- and downstream monitoring
 * DOCSIS 3.1 support
 
-Tested on
+Tested with
 ---
 * EuroDOCSIS
 * Cisco cBR-8
