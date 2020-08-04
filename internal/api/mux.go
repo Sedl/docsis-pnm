@@ -39,7 +39,10 @@ func Register(router *mux.Router, manager *manager.Manager) {
 	router.HandleFunc("/modems", api.modemsAll)
 
 	router.HandleFunc("/modems/{modemId}", api.modemsById)
-	router.HandleFunc("/modems/{modemId}/downstream/latest", api.modemsDownstreamLatest)
 
+	router.HandleFunc("/modems/{modemId}/downstream/latest", api.modemsDownstreamLatest)
 	router.HandleFunc("/modems/{modemId}/downstream/history/{fromTS:[0-9]+}/{toTS:[0-9]+}", api.modemsDownstreamHistory)
+
+	router.HandleFunc("/modems/{modemId}/upstream/latest", api.modemsUpstreamLatest)
+	router.HandleFunc("/modems/{modemId}/upstream/history/{fromTS:[0-9]+}/{toTS:[0-9]+}", api.modemsUpstreamHistory)
 }

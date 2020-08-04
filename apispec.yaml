@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: docsis-pnm API
-  version: 0.0.1
+  version: 0.1.0
 servers: 
   - url: /
 paths:
@@ -236,7 +236,42 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DownstreamHistory'
+                  
+  /modems/{modemId}/upstream/latest:
+    get:
+      tags:
+        - Modem
+      parameters:
+        - $ref: '#/components/parameters/modemId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpstreamHistory'
 
+  /modems/{modemId}/upstream/history/{fromTS}/{toTS}:
+    get:
+      tags:
+        - Modem
+      parameters:
+        - $ref: '#/components/parameters/modemId'
+        - $ref: '#/components/parameters/fromTS'
+        - $ref: '#/components/parameters/toTS'
+
+      responses:
+        200:
+          headers:
+            X-Count:
+              $ref: '#/components/headers/X-Count'
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UpstreamHistory'
 components:
 
   headers:
@@ -445,6 +480,51 @@ components:
           description: Sysdescr as returned via SNMP
           example: 'FRITZ!Box Cable <<HW_REV: 233.8; VENDOR: AVM GmbH; BOOTR: 1.3465; SW_REV: 161.07.19-77042; MODEL: 6591>>'
 
+    UpstreamHistoryEntry:
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Upstream ID
+        pwr:
+          type: integer
+          format: int32
+          description: Power in tenth dBmV
+          example: -10
+        snr:
+          type: integer
+          format: int32
+          description: Signal to noise ratio (SNR) in tenth dB (you have to divide the value by ten)
+          example: 299
+        mrefl:
+          type: integer
+          format: int32
+          example: -30
+          description: Microreflections in -dBc
+        unerr:
+          type: integer
+          format: uint64
+          description: Number of received unerrored codewords
+        corr:
+          type: integer
+          format: uint64
+          description: Number of received corrected codewords
+        err:
+          type: integer
+          format: uint64
+          description: Number of erroneous codewords
+
+    UpstreamHistory:
+      properties:
+        ts:
+          type: integer
+          format: int64
+          description: Unix timestamp in full seconds
+        us:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpstreamHistoryEntry'
+
     DownstreamChannel:
       properties:
         freq:
@@ -466,7 +546,7 @@ components:
           type: integer
           format: int32
           example: -30
-          description: Microreflections in negative dB
+          description: Microreflections in -dBc
         unerr:
           type: integer
           format: uint64

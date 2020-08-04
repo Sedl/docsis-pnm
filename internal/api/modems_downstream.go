@@ -44,8 +44,6 @@ func dsHistoryCb(rows *sql.Rows) (interface{}, error) {
 	var lastTS, ts int64
 	var err error
 
-	// var dslist *[]*types.DownstreamChannel
-
 	var hist *DownstreamHistory
 	for rows.Next() {
 
@@ -122,37 +120,6 @@ func (api *Api) modemsDownstreamLatest(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
-
-/*
-func dbFetchDsChannels(dsquery *db.DownstreamHistoryQuery) ([]*DownstreamHistory, error) {
-
-	history := make([]*DownstreamHistory, 0)
-
-	var lastTS int64
-	dslist := make([]*types.DownstreamChannel, 0)
-	for {
-		ts, ds, err := dsquery.Next()
-		if err != nil {
-			return nil, err
-		}
-		if ds == nil {
-			break
-		}
-
-		if lastTS != ts {
-			dslist = make([]*types.DownstreamChannel, 0)
-			history = append(history, &DownstreamHistory{
-				TS: ts,
-				DS: &dslist,
-			})
-			lastTS = ts
-		}
-		dslist = append(dslist, ds)
-	}
-	return history, nil
-}
-
- */
 
 func (api *Api) modemsDownstreamHistory(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

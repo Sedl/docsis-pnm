@@ -3,7 +3,6 @@ package db
 import (
     "database/sql"
     "fmt"
-    "log"
     "strings"
 )
 
@@ -77,8 +76,6 @@ func (q *Query) Exec() error {
 
     where, values := concatWhere(q.conditions)
 
-    // log.Printf("%#v", values)
-
     if where == "" {
         where = "true"
     }
@@ -94,7 +91,6 @@ func (q *Query) Exec() error {
 
     query = fmt.Sprintf("%s WHERE %s %s %s %s", query, where, groupBy, orderBy, limit)
 
-    log.Printf("debug: %s\n", query)
     rows, err := q.db.Query(query, values...)
     if err != nil {
         return err
