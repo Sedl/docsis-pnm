@@ -120,7 +120,7 @@ func (db *Postgres) UpdateCmtsUpstreams (records map[int]*types.CMTSUpstreamReco
 	return nil
 }
 
-func (db *Postgres) GetCMTSUpstreamByDescr(cmtsId uint32, descr string) (*types.CMTSUpstreamRecord, error) {
+func (db *Postgres) GetCMTSUpstreamByDescr(cmtsId int32, descr string) (*types.CMTSUpstreamRecord, error) {
 
 	conn, err := db.GetConn()
 	if err != nil {

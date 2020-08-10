@@ -17,6 +17,6 @@ type ModemInfo struct {
 	Unerroreds     uint64           `json:"cw_unerroreds"`
 	Correcteds     uint64           `json:"cw_correcteds"`
 	Uncorrectables uint64           `json:"cw_uncorrectables"`
-	CmtsDbId       uint32           `json:"-"`
+	CmtsDbId       int32           `json:"-"`
 	Timestamp      int64            `json:"-"`
 }

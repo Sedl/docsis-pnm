@@ -12,7 +12,7 @@ import (
 
 type ModemJson struct {
 	Id            uint64 `json:"modem_id"`
-	CmtsId        uint32 `json:"cmts_id"`
+	CmtsId        int32 `json:"cmts_id"`
 	Mac           string `json:"mac"`
 	Sysdescr      string `json:"sysdescr"`
 	IPAddr        string `json:"ipaddr"`

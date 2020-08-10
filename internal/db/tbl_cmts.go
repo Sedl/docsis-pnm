@@ -27,7 +27,7 @@ func (db *Postgres) InsertCMTS(cmts *types.CMTSRecord) (err error) {
 	defer CloseOrLog(rows)
 	rows.Next()
 
-	var dbId uint32
+	var dbId int32
 
 	err = rows.Scan(&dbId)
 	if err != nil {

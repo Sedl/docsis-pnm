@@ -12,7 +12,7 @@ type ModemData struct {
 	DownStreams     []DownstreamChannel
 	UpStreams       []UpstreamChannel
 	Mac             net.HardwareAddr
-	CmtsDbId        uint32
+	CmtsDbId        int32
 	DbModemId       uint64
 	Err             error
 	Errors          []string `json:"errors"`
@@ -26,7 +26,7 @@ type ModemPollRequest struct {
 	Hostname string // hostname or IP
 	// CmtsId The database ID where the modem is currently active. This is here so the database gets an update of the
 	// modems location. The location can change because customers tend to carry modems around...
-	CmtsId    uint32
+	CmtsId    int32
 	Mac       net.HardwareAddr
 	SnmpIndex int32
 	Community string

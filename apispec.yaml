@@ -1,10 +1,38 @@
 openapi: 3.0.0
 info:
   title: docsis-pnm API
-  version: 0.1.0
+  version: 0.2.0
 servers: 
   - url: /
 paths:
+
+  /upstreams:
+    get:
+      tags:
+        - Upstreams
+      responses:
+        200:
+          description: Return a list of all known upstream channels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Upstream'
+
+  /upstreams/{upstreamId}:
+    get:
+      tags:
+        - Upstreams
+      parameters: 
+        - $ref: '#/components/parameters/upstreamId'
+      responses:
+        200:
+          description: Returns the upstream with the given ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Upstream'
 
   /stats:
     get:
@@ -298,6 +326,15 @@ components:
             $ref: '#/components/schemas/Cmts'
         
   parameters:
+    upstreamId:
+      name: upstreamId
+      in: path
+      required: true
+      description: Upstream database ID
+      schema:
+        type: integer
+        example: 378
+
     fromTS:
       name: fromTS
       in: path
@@ -479,6 +516,36 @@ components:
           type: string
           description: Sysdescr as returned via SNMP
           example: 'FRITZ!Box Cable <<HW_REV: 233.8; VENDOR: AVM GmbH; BOOTR: 1.3465; SW_REV: 161.07.19-77042; MODEL: 6591>>'
+
+    Upstream:
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Database upstream ID
+        cmts_id:
+          type: integer
+          format: int32
+          description: CMTS database ID
+        snmp_index:
+          type: integer
+          format: int32
+          description: SNMP index on the CMTS
+        description:
+          type: string
+          description: Description as returned by the CMTS
+        alias:
+          type: string
+          description: Alias of the upstream, can be set on the CMTS
+        freq:
+          type: integer
+          format: int32
+          description: Center frequency of the channel
+        admin_status:
+          type: integer
+          format: int32
+          description: admin status returned by SNMP
+
 
     UpstreamHistoryEntry:
       properties:

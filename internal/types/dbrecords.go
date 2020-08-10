@@ -8,7 +8,7 @@ import (
 
 // CMTSRecord represents a CMTS database record
 type CMTSRecord struct {
-	Id                 uint32 `json:"cmts_id"`
+	Id                 int32 `json:"cmts_id"`
 	Hostname           string `json:"hostname"`
 	SNMPCommunity      string `json:"snmp_community,omitempty"`
 	SNMPModemCommunity string `json:"snmp_community_modem,omitempty"`
@@ -17,13 +17,13 @@ type CMTSRecord struct {
 }
 
 type CMTSUpstreamRecord struct {
-	ID          int32
-	CMTSID      uint32
-	SNMPIndex   int32
-	Description string
-	Freq        int32
-	Alias       string
-	AdminStatus int32
+	ID          int32  `json:"id"`
+	CMTSID      int32  `json:"cmts_id"`
+	SNMPIndex   int32  `json:"snmp_index"`
+	Description string `json:"description"`
+	Alias       string `json:"alias"`
+	Freq        int32  `json:"freq"`
+	AdminStatus int32  `json:"admin_status"`
 }
 
 func (m *CMTSUpstreamRecord) String() string {
@@ -48,10 +48,10 @@ type ModemRecord struct {
 	Mac           net.HardwareAddr
 	SysDescr      string
 	IP            net.IP
-	CmtsId        uint32
+	CmtsId        int32
 	SnmpIndex     int32
 	DocsisVersion uint32
-	DSPrimary	  int32
-	CmtsDsIndex	  int32
+	DSPrimary     int32
+	CmtsDsIndex   int32
 	CmtsUsIndex   int32
 }
