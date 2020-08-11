@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: docsis-pnm API
-  version: 1.0.0
+  version: 2.0.0
 servers: 
   - url: /
 paths:
@@ -214,13 +214,12 @@ paths:
         200:
           description: OK
 
-  /modems/{modemMac}/livestatus:
+  /modems/{modemId}/livestatus:
     post:
       tags:
         - Modem
-        - Not implemented yet
       parameters:
-        - $ref: '#/components/parameters/modemMac'
+        - $ref: '#/components/parameters/modemId'
       responses:
         200:
           description: OK
@@ -229,7 +228,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModemLiveStatus'
 
-  /modems/{modemId}/downstream/latest:
+  /modems/{modemId}/downstreamHistory/latest:
     get:
       tags:
         - Modem
@@ -245,7 +244,7 @@ paths:
                 $ref: '#/components/schemas/DownstreamHistory'
             
 
-  /modems/{modemId}/downstream/history/{fromTS}/{toTS}:
+  /modems/{modemId}/downstreamHistory/{fromTS}/{toTS}:
     get:
       tags:
         - Modem
@@ -432,7 +431,17 @@ components:
         format: macaddr
 
   schemas:
-        
+
+    DocsisVersion:
+      type: string
+      enum:
+        - 'docs_10'
+        - 'docs_11'
+        - 'docs_20'
+        - 'docs_21'
+        - 'docs_31'
+        - 'unknown'
+
     Error:
       type: object
       readOnly: true
@@ -551,16 +560,49 @@ components:
     
     ModemLiveStatus:
       properties:
-        uptime:
-          type: integer
-          format: int32
-          description: Uptime in seconds
-          example: 3601
         sysdescr:
           type: string
-          description: Sysdescr as returned via SNMP
+          description: system description as returned via SNMP
           example: 'FRITZ!Box Cable <<HW_REV: 233.8; VENDOR: AVM GmbH; BOOTR: 1.3465; SW_REV: 161.07.19-77042; MODEL: 6591>>'
-
+        hostname:
+          type: string
+          description: hostname or IP address of the modem
+          example: 10.0.0.5
+        query_time_ns:
+          type: integer
+          description: time in nanoseconds it took to retrieve the data from the modem
+          example: 1000345
+        timestamp:
+          type: integer
+          format: int64
+          description: Unix timestamp in seconds at the time when the modem was polled
+          example: 1597155850
+        ds:
+          type: array
+          items:
+            $ref: '#/components/schemas/DownstreamChannel'
+        us:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModemUpstream'
+        error:
+          type: string
+          description: error message of potential errors that occured while polling
+        docsis_version:
+          type: string
+          items:
+            $ref: '#/components/schemas/DocsisVersion'
+          example: docs_30
+        ds_primary:
+          type: integer
+          description: SNMP index of downstream primary
+        uptime:
+          type: integer
+          format: uint32
+          description: uptime in hundreths of a second (divide this by 100 to get seconds)
+          example: 3601
+      
+        
     Upstream:
       properties:
         id:
@@ -692,7 +734,7 @@ components:
           type: integer
           format: int54
           description: Unix timestamp in full seconds
-        ds:
+        us:
           type: array
           items:
             $ref: '#/components/schemas/ModemUpstream'

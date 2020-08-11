@@ -12,6 +12,7 @@ import (
 const (
 	docsIfDocsisBaseCapability     = ".1.3.6.1.2.1.10.127.1.1.5.0"
 	sysDescr                       = ".1.3.6.1.2.1.1.1.0"
+	sysUpTimeInstance			   = ".1.3.6.1.2.1.1.3.0"
 	docsIf31CmDocsisBaseCapability = ".1.3.6.1.4.1.4491.2.1.28.1.1.0"
 	DocsVers10                     = 1
 	DocsVer11                      = 2
@@ -34,6 +35,7 @@ func modemBasicInfo(snmp *gosnmp.GoSNMP, data *types.ModemData) error {
 		data.Sysdescr, err = snmp2.ToString(&result.Variables[0])
 	}
 
+	// check for DOCSIS capabilities
 	result, err = snmp.Get([]string{docsIf31CmDocsisBaseCapability})
 	if err == nil && len(result.Variables) > 0 && result.Variables[0].Type == gosnmp.Integer {
 			docs31Cap, _ = snmp2.ToInt(&result.Variables[0])
@@ -42,7 +44,7 @@ func modemBasicInfo(snmp *gosnmp.GoSNMP, data *types.ModemData) error {
 	if docs31Cap > 0 {
 		data.DocsisVersion = DocsVer31
 	} else {
-		// probably no DOCSIS 3.1 modem, check for older versions
+		// probably not a DOCSIS 3.1 modem, check for older versions
 		result, err = snmp.Get([]string{docsIfDocsisBaseCapability})
 		if err == nil && len(result.Variables) > 0 {
 			docsCap, _ = snmp2.ToInt(&result.Variables[0])
@@ -53,6 +55,13 @@ func modemBasicInfo(snmp *gosnmp.GoSNMP, data *types.ModemData) error {
 		} else {
 			data.DocsisVersion = uint32(docsCap)
 		}
+	}
+
+	// uptime
+	result, err = snmp.Get([]string{sysUpTimeInstance})
+	if err == nil && len(result.Variables) > 0 {
+		uptime, _ := snmp2.ToUint32(&result.Variables[0])
+		data.Uptime = uint32(uptime)
 	}
 
 	return nil

@@ -19,7 +19,6 @@ type Cmts struct {
 	modemBucket       [][]*types.ModemInfo
 	CmtsModemInfoSink chan *types.ModemInfo
 	lockModemBucket   sync.RWMutex
-	//modemList         map[string]*types.ModemInfo
 	modemList         *types.ModemList
 
 	DBBackend     types.DbInterface
@@ -32,6 +31,10 @@ type Cmts struct {
 	config        *config.Config
 	stopWg        *sync.WaitGroup
 	dbSyncer	  *pgdbsyncer.PgDbSyncer
+}
+
+func (cmts *Cmts) ValueOfDbId() int32 {
+	return cmts.dbRec.Id
 }
 
 func (cmts *Cmts) ValueOfModemsOnline() int32 {

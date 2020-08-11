@@ -62,12 +62,14 @@ func ToUint(result *gosnmp.SnmpPDU, snmp *gosnmp.GoSNMP) (uint, error) {
 
 func ToUint32(result *gosnmp.SnmpPDU) (uint32, error) {
 	switch result.Type {
+	case gosnmp.TimeTicks:
+		return result.Value.(uint32), nil
 	case gosnmp.Gauge32:
 		return uint32(result.Value.(uint)), nil
 	case gosnmp.Integer:
 		return uint32(result.Value.(int)), nil
 	default:
-		log.Printf("invalid data type (%#x) in snmp response (%s). expecting type gauge32 (0x42).",
+		log.Printf("invalid data type (%d) in snmp response (%s). expecting type gauge32 (0x42).",
 			result.Type, result.Name)
 		return 0, IntegerConversionError
 	}
