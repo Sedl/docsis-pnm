@@ -6,13 +6,12 @@ import (
 	"github.com/sedl/docsis-pnm/internal/modem"
 	"github.com/sedl/docsis-pnm/internal/types"
 	"net/http"
-	"regexp"
 	"strconv"
 )
 
 type ModemJson struct {
 	Id            uint64 `json:"modem_id"`
-	CmtsId        int32 `json:"cmts_id"`
+	CmtsId        int32  `json:"cmts_id"`
 	Mac           string `json:"mac"`
 	Sysdescr      string `json:"sysdescr"`
 	IPAddr        string `json:"ipaddr"`
@@ -55,44 +54,15 @@ func (api *Api) modemsAll(w http.ResponseWriter, r *http.Request) {
 	api.modemsBy(w, "", false)
 }
 
-func detectModemIdUrlColumn(modemId string) (string, error) {
-	matched , err := regexp.MatchString("^[0-9]+$", modemId)
-	if err != nil {
-		return "", err
-	}
-	if matched {
-		return "id", nil
-	}
-
-	matched, err = regexp.MatchString("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$", modemId)
-	if err != nil {
-		return "", err
-	}
-	if matched {
-		return "ip", nil
-	}
-
-	matched, err = regexp.MatchString("^[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}$", modemId)
-	if err != nil {
-		return "", err
-	}
-	if matched {
-		return "mac", nil
-	}
-
-	return "", ErrorInvalidModemId
-}
-
 func (api *Api) modemsById(w http.ResponseWriter, r *http.Request) {
-    id := mux.Vars(r)["modemId"]
-    where, err := detectModemIdUrlColumn(id)
+	id := mux.Vars(r)["modemId"]
+	where, err := detectModemIdUrlColumn(id)
 	if err != nil {
 		HandleBadRequest(w, err)
 		return
 	}
-	api.modemsBy(w, where + " = $1", true, id)
+	api.modemsBy(w, where+" = $1", true, id)
 }
-
 
 func (api *Api) modemsByCmtsId(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["cmtsId"]

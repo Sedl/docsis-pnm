@@ -20,7 +20,7 @@ const cacheOffset = 3600
 
 func addCacheHeader(timestamp int64, w http.ResponseWriter) {
 	now := time.Now().Unix()
-	if now - cacheOffset > timestamp {
+	if (timestamp + cacheOffset) < now {
 		w.Header().Set("Cache-Control", "public,max-age=31536000,immutable")
 	}
 }
@@ -48,11 +48,14 @@ func Register(router *mux.Router, manager *manager.Manager) {
 
 	router.HandleFunc("/modems/{modemId}", api.modemsById)
 
-	router.HandleFunc("/modems/{modemId}/downstream/latest", api.modemsDownstreamLatest)
-	router.HandleFunc("/modems/{modemId}/downstream/history/{fromTS:[0-9]+}/{toTS:[0-9]+}", api.modemsDownstreamHistory)
+	router.HandleFunc("/modems/{modemId}/downstreamHistory/latest", api.modemsDownstreamLatest)
+	router.HandleFunc("/modems/{modemId}/downstreamHistory/{fromTS:[0-9]+}/{toTS:[0-9]+}", api.modemsDownstreamHistory)
 
-	router.HandleFunc("/modems/{modemId}/upstream/latest", api.modemsUpstreamLatest)
-	router.HandleFunc("/modems/{modemId}/upstream/history/{fromTS:[0-9]+}/{toTS:[0-9]+}", api.modemsUpstreamHistory)
+	router.HandleFunc("/modems/{modemId}/upstreamHistoryFromCMTS/latest", api.modemsUpstreamCMTSLatest)
+	router.HandleFunc("/modems/{modemId}/upstreamHistoryFromCMTS/{fromTS:[0-9]+}/{toTS:[0-9]+}", api.modemsUpstreamCMTSHistory)
+
+	router.HandleFunc("/modems/{modemId}/upstreamHistoryFromModem/latest", api.modemUpstreamLatest)
+	router.HandleFunc("/modems/{modemId}/upstreamHistoryFromModem/{fromTS:[0-9]+}/{toTS:[0-9]+}", api.modemUpstream)
 
 	router.HandleFunc("/upstreams", api.upstreams)
 	router.HandleFunc("/upstreams/{upstreamId:[0-9]+}", api.upstreamsById)

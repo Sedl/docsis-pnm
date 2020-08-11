@@ -30,6 +30,7 @@ var revisions = []revUpgradeFunc{
 	rev1,
 	rev2,
 	rev3,
+	rev4,
 }
 
 func createPartitions(dbc *sql.DB, partStart int64, interval int64) error {

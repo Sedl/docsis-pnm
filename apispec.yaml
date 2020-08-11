@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: docsis-pnm API
-  version: 0.2.0
+  version: 1.0.0
 servers: 
   - url: /
 paths:
@@ -235,6 +235,7 @@ paths:
         - Modem
       parameters:
         - $ref: '#/components/parameters/modemId'
+      description: latest downstream performance data as returned from modem
       responses:
         200:
           description: OK
@@ -243,6 +244,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DownstreamHistory'
             
+
   /modems/{modemId}/downstream/history/{fromTS}/{toTS}:
     get:
       tags:
@@ -251,7 +253,7 @@ paths:
         - $ref: '#/components/parameters/modemId'
         - $ref: '#/components/parameters/fromTS'
         - $ref: '#/components/parameters/toTS'
-
+      description: downstream performance data history as returned from modem
       responses:
         200:
           headers:
@@ -265,12 +267,13 @@ paths:
                 items:
                   $ref: '#/components/schemas/DownstreamHistory'
                   
-  /modems/{modemId}/upstream/latest:
+  /modems/{modemId}/upstreamHistoryFromCMTS/latest:
     get:
       tags:
         - Modem
       parameters:
         - $ref: '#/components/parameters/modemId'
+      description: latest upstream performance data as returned from CMTS
       responses:
         200:
           description: OK
@@ -279,7 +282,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UpstreamHistory'
 
-  /modems/{modemId}/upstream/history/{fromTS}/{toTS}:
+  /modems/{modemId}/upstreamHistoryFromCMTS/{fromTS}/{toTS}:
     get:
       tags:
         - Modem
@@ -287,7 +290,7 @@ paths:
         - $ref: '#/components/parameters/modemId'
         - $ref: '#/components/parameters/fromTS'
         - $ref: '#/components/parameters/toTS'
-
+      description: upstream performance data as returned from CMTS
       responses:
         200:
           headers:
@@ -300,6 +303,47 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/UpstreamHistory'
+
+  /modems/{modemId}/upstreamHistoryFromModem/latest:
+    get:
+      tags: 
+        - Modem
+      parameters: 
+        - $ref: '#/components/parameters/modemId'
+      description: latest upstream performance data as returned from modem
+      responses:
+        200:
+          headers:
+            X-Count:
+              $ref: '#/components/headers/X-Count'
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpstreamHistoryModem'
+
+  /modems/{modemId}/upstreamHistoryFromModem/{fromTS}/{toTS}:
+    get:
+      tags: 
+        - Modem
+      parameters: 
+        - $ref: '#/components/parameters/modemId'
+        - $ref: '#/components/parameters/fromTS'
+        - $ref: '#/components/parameters/toTS'
+      description: upstream performance data history as returned from modem
+      responses:
+        200:
+          headers:
+            X-Count:
+              $ref: '#/components/headers/X-Count'
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UpstreamHistoryModem'
+
 components:
 
   headers:
@@ -642,6 +686,32 @@ components:
           items:
             $ref: '#/components/schemas/DownstreamChannel'
     
+    UpstreamHistoryModem:
+      properties:
+        ts:
+          type: integer
+          format: int54
+          description: Unix timestamp in full seconds
+        ds:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModemUpstream'
+          
+    ModemUpstream:
+      properties:
+        freq:
+          type: integer
+          format: int32
+          description: Upstream Frequency in Hz
+        timing_offset:
+          type: integer
+          format: int32
+          description: Timing offset
+        tx_power:
+          type: integer
+          format: int32
+          description: Transmit power of the channel in tenth dBmV
+          
     Stats:
       properties:
         queue_length:

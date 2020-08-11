@@ -9,7 +9,7 @@ import (
     "strconv"
 )
 
-const modemUpstreamHistoryQuery = `
+const modemUpstreamHistoryQueryCMTS = `
 SELECT
     us.poll_time,
     us.modem_id,
@@ -28,10 +28,13 @@ JOIN
             modem.id = us.modem_id
         ) 
 `
+
+
 type UpstreamHistory struct {
     TS int64 `json:"ts"`
     US []*types.UpstreamModemCMTS `json:"us"`
 }
+
 func usHistoryCb(rows *sql.Rows) (interface{}, error) {
 
     history := make([]*UpstreamHistory, 0)
@@ -73,7 +76,8 @@ func usHistoryCb(rows *sql.Rows) (interface{}, error) {
     return history, nil
 }
 
-func (api *Api) modemsUpstreamLatest(w http.ResponseWriter, r *http.Request) {
+
+func (api *Api) modemsUpstreamCMTSLatest(w http.ResponseWriter, r *http.Request) {
 
     vars := mux.Vars(r)
     id := vars["modemId"]
@@ -88,7 +92,7 @@ func (api *Api) modemsUpstreamLatest(w http.ResponseWriter, r *http.Request) {
         HandleServerError(w, err)
         return
     }
-    query := db.NewQuery(conn, usHistoryCb, modemUpstreamHistoryQuery)
+    query := db.NewQuery(conn, usHistoryCb, modemUpstreamHistoryQueryCMTS)
     query.OrderBy("d.poll_time").Where("modem." + column, "=", id)
     err = query.Exec()
     if err != nil {
@@ -113,7 +117,7 @@ func (api *Api) modemsUpstreamLatest(w http.ResponseWriter, r *http.Request) {
     }
 }
 
-func (api *Api) modemsUpstreamHistory(w http.ResponseWriter, r *http.Request) {
+func (api *Api) modemsUpstreamCMTSHistory(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     id := vars["modemId"]
     column, err := detectModemIdUrlColumn(id)
@@ -140,7 +144,7 @@ func (api *Api) modemsUpstreamHistory(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    query := db.NewQuery(conn, usHistoryCb, modemUpstreamHistoryQuery)
+    query := db.NewQuery(conn, usHistoryCb, modemUpstreamHistoryQueryCMTS)
     query.Where("modem." + column, "=", id)
     query.Where("us.poll_time", ">=", from)
     query.Where("us.poll_time", "<=", to)

@@ -8,6 +8,8 @@ import (
 
 type ScanCallback func(rows *sql.Rows) (interface{}, error)
 
+type SqlExpression string
+
 type where struct {
     column   string
     operator string
@@ -63,9 +65,17 @@ func concatWhere(wh []where) (string, []interface{}) {
 
     values := make([]interface{}, 0)
 
-    for i, w := range wh {
-        whereList = append(whereList, fmt.Sprintf("%s %s $%d", w.column, w.operator, i + 1))
-        values = append(values, w.value)
+    i := 0
+    for _, w := range wh {
+        switch w.value.(type) {
+        case SqlExpression:
+            value := string(w.value.(SqlExpression))
+            whereList = append(whereList, fmt.Sprintf("%s %s %s", w.column, w.operator, value))
+        default:
+            whereList = append(whereList, fmt.Sprintf("%s %s $%d", w.column, w.operator, i+1))
+            i++
+            values = append(values, w.value)
+        }
     }
 
     return strings.Join(whereList, " AND "), values

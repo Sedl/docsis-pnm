@@ -46,7 +46,7 @@ func (m *PgDbSyncer) Run() error {
 
 	log.Println("debug: starting modem_upstream copy goroutine")
 	upstreamCopy := pq.CopyIn("modem_upstream",
-		"modem_id", "poll_time", "freq", "modulation", "timing_offset")
+		"modem_id", "poll_time", "freq", "timing_offset", "tx_power")
 	m.copyUpstreams, err = db.NewCopyFrom(upstreamCopy, conn, 100, m.commitInterval)
 	if err != nil {
 		return err
@@ -132,7 +132,7 @@ func (m *PgDbSyncer) insertUpstreamData(mdata *types.ModemData) {
 			continue
 		}
 		m.copyUpstreams.Insert(mdata.DbModemId, mdata.Timestamp,
-			us.Freq, us.ModulationProfile, us.TimingOffset)
+			us.Freq, us.TimingOffset, us.TxPower)
 		usFreqList[int64(us.Freq)] = nothing{}
 	}
 }

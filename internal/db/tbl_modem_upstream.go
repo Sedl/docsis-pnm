@@ -1,5 +1,6 @@
 package db
 
+/*
 import (
 	"database/sql"
 	"github.com/sedl/docsis-pnm/internal/types"
@@ -84,3 +85,4 @@ func (db *Postgres) GetUpstreamHistory(mac net.HardwareAddr, from, to int) ([]*t
 
 	return ushist, nil
 }
+ */

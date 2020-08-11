@@ -21,35 +21,6 @@ const (
 	ifType                         = ".1.3.6.1.2.1.2.2.1.3"
 )
 
-func docsisVersion1(packet *gosnmp.SnmpPacket) uint32 {
-	var ver uint32
-	var err error
-	if packet.Variables[2].Type == gosnmp.Integer {
-		ver, err = snmp2.ToUint32(&packet.Variables[2])
-		if err != nil {
-			return 0
-		}
-		if ver > 0 {
-			return DocsVer31
-		}
-	}
-
-	if packet.Variables[1].Type == gosnmp.Integer {
-		ver, err = snmp2.ToUint32(&packet.Variables[1])
-		if err != nil {
-			return 0
-		}
-		// some modems return 5 here but don't have DOCSIS 3.1 MIBs
-		if ver >= 4 {
-			return DocsVer30
-		} else {
-			return ver
-		}
-	}
-
-	return 0
-}
-
 func modemBasicInfo(snmp *gosnmp.GoSNMP, data *types.ModemData) error {
     // We have to get all the values seperately because some modems (like Teleste amplifiers) don't support
 	// multiple SNMP get values in one request and will return NULL values
@@ -85,24 +56,6 @@ func modemBasicInfo(snmp *gosnmp.GoSNMP, data *types.ModemData) error {
 	}
 
 	return nil
-	/*
-	var result *gosnmp.SnmpPacket
-	oids := []string{sysDescr, docsIfDocsisBaseCapability, docsIf31CmDocsisBaseCapability}
-
-	result, err := snmp.Get(oids)
-	if err != nil {
-		return err
-	}
-
-	if len(result.Variables) == len(oids) {
-		descr, err := snmp2.ToString(&result.Variables[0])
-		if err == nil {
-			data.Sysdescr = descr
-		}
-		data.DocsisVersion = docsisVersion(result)
-	}
-	return nil
-	 */
 }
 
 func getInterfaceTypes(snmp *gosnmp.GoSNMP) (map[int]int, error) {
@@ -193,7 +146,7 @@ func Poll(ip string, mac net.HardwareAddr, community string) (data *types.ModemD
 		return
 	}
 
-	if data.UpStreams, err = GetUpstreamChannels(snmp); err != nil {
+	if data.UpStreams, err = GetUpstreamChannels(snmp, data.DocsisVersion); err != nil {
 		log.Printf(
 			"Error getting upstream information from modem %s (%s): %s", macs, ip, err)
 		data.Err = err

@@ -2,7 +2,6 @@ package api
 
 import (
 	"database/sql"
-	"github.com/gorilla/mux"
 	"github.com/sedl/docsis-pnm/internal/db"
 	"github.com/sedl/docsis-pnm/internal/types"
 	"net/http"
@@ -78,11 +77,9 @@ func dsHistoryCb(rows *sql.Rows) (interface{}, error) {
 }
 
 func (api *Api) modemsDownstreamLatest(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["modemId"]
-	column, err := detectModemIdUrlColumn(id)
+	vars, err := ParsePath(r)
 	if err != nil {
-		HandleBadRequest(w, err)
+		HandleServerError(w, err)
 		return
 	}
 
@@ -93,7 +90,8 @@ func (api *Api) modemsDownstreamLatest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := db.NewQuery(conn, dsHistoryCb, modemHistoryQuery)
-	query.OrderBy("d.poll_time").Where("modem." + column, "=", id)
+	query.Where("modem." + vars.ModemColumn, "=", vars.ModemId)
+	query.Where("d.poll_time", "=", db.SqlExpression("(SELECT MAX(poll_time) FROM modem_downstream WHERE modem_id = modem.id)"))
 
 	err = query.Exec()
 	if err != nil {
@@ -109,6 +107,7 @@ func (api *Api) modemsDownstreamLatest(w http.ResponseWriter, r *http.Request) {
 	}
 	hist, _ := history.([]*DownstreamHistory)
 
+	// TODO limit query!
 	if hist != nil && len(hist) > 0 {
 		JsonResponse(w, hist[0])
 		return
@@ -120,21 +119,7 @@ func (api *Api) modemsDownstreamLatest(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *Api) modemsDownstreamHistory(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["modemId"]
-	column, err := detectModemIdUrlColumn(id)
-	if err != nil {
-		HandleBadRequest(w, err)
-		return
-	}
-
-	from, err := strconv.ParseInt(vars["fromTS"], 10, 64)
-	if err != nil {
-		HandleServerError(w, err)
-		return
-	}
-
-	to, err := strconv.ParseInt(vars["toTS"], 10, 64)
+    vars, err := ParsePath(r)
 	if err != nil {
 		HandleServerError(w, err)
 		return
@@ -147,9 +132,9 @@ func (api *Api) modemsDownstreamHistory(w http.ResponseWriter, r *http.Request) 
 	}
 
 	query := db.NewQuery(conn, dsHistoryCb, modemHistoryQuery)
-	query.Where("modem." + column, "=", id)
-	query.Where("d.poll_time", ">=", from)
-	query.Where("d.poll_time", "<=", to)
+	query.Where("modem." + vars.ModemColumn, "=", vars.ModemId)
+	query.Where("d.poll_time", ">=", vars.FromTs)
+	query.Where("d.poll_time", "<=", vars.ToTs)
 	err = query.Exec()
 	if err != nil {
 		HandleServerError(w, err)
@@ -162,7 +147,7 @@ func (api *Api) modemsDownstreamHistory(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	addCacheHeader(to, w)
+	addCacheHeader(vars.ToTs, w)
 	hist, _ := history.([]*DownstreamHistory)
 	w.Header().Set("X-Count", strconv.Itoa(len(hist)))
 	JsonResponse(w, hist)
