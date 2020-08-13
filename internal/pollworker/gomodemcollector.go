@@ -1,17 +1,18 @@
-package modem
+package pollworker
 
 import (
 	"errors"
 	"github.com/sedl/docsis-pnm/internal/config"
+	"github.com/sedl/docsis-pnm/internal/modem"
 	"github.com/sedl/docsis-pnm/internal/types"
 	"log"
 	"sync"
 	"sync/atomic"
 )
 
-type Poller struct {
+type PollWorker struct {
 	WorkerCount    int
-	requestChan    chan *types.ModemPollRequest
+	requestChan    chan *modem.Poller
 	ModemDataSink  chan *types.ModemData
 	wg             *sync.WaitGroup
 	statError      uint64
@@ -20,9 +21,9 @@ type Poller struct {
 	dbModemUpdater types.ModemUpdaterInterface
 }
 
-func NewPoller(config *config.Snmp, modemUpdater types.ModemUpdaterInterface) *Poller {
-	return &Poller{
-		requestChan:    make(chan *types.ModemPollRequest, 10000),
+func NewPollWorker(config *config.Snmp, modemUpdater types.ModemUpdaterInterface) *PollWorker {
+	return &PollWorker{
+		requestChan:    make(chan *modem.Poller, 10000),
 		config:         config,
 		dbModemUpdater: modemUpdater,
 		WorkerCount:    config.WorkerCount,
@@ -31,19 +32,19 @@ func NewPoller(config *config.Snmp, modemUpdater types.ModemUpdaterInterface) *P
 	}
 }
 
-func (p *Poller) GetPollOk() uint64 {
+func (p *PollWorker) GetPollOk() uint64 {
 	return atomic.LoadUint64(&p.statOK)
 }
 
-func (p *Poller) GetPollErr() uint64 {
+func (p *PollWorker) GetPollErr() uint64 {
 	return atomic.LoadUint64(&p.statError)
 }
 
-func (p *Poller) GetRequestQueueLength() int {
+func (p *PollWorker) GetRequestQueueLength() int {
 	return len(p.requestChan)
 }
 
-func (p *Poller) Poll(request *types.ModemPollRequest) error {
+func (p *PollWorker) Poll(request *modem.Poller) error {
 	select {
 	case p.requestChan <- request:
 	default:
@@ -52,7 +53,23 @@ func (p *Poller) Poll(request *types.ModemPollRequest) error {
 	return nil
 }
 
-func (p *Poller) collector() {
+func poll(req *modem.Poller) (*types.ModemData, error){
+	err := req.Connect()
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		err := req.Close()
+		if err != nil {
+			log.Printf("Error closing SNMP connection for modem %s: %s\n", req.Hostname, err)
+		}
+	}()
+
+	return req.Poll()
+}
+
+func (p *PollWorker) collector() {
 	p.wg.Add(1)
 	defer p.wg.Done()
 	for {
@@ -64,7 +81,7 @@ func (p *Poller) collector() {
 			}
 			// log.Printf("debug: collecting data from modem %s (%s)\n", request.Mac.String(), request.Hostname)
 			// TODO SNMP Community aus der Datenbank holen, ggf. schon in den Request packen
-			mdata, err := Poll(request.Hostname, request.Mac, request.Community)
+			mdata, err := poll(request)
 			// TODO error an mdata struct weitergeben um Fehlerdiagnose zu ermöglichen und um Fehler auswerten zu können
 			if err != nil {
 				log.Printf("Error while collecting data from modem (%s) (%q)", request.Hostname, err)
@@ -72,7 +89,6 @@ func (p *Poller) collector() {
 				if mdata == nil {
 					continue
 				}
-				// log.Printf("%#v\n", mdata)
 			} else {
 				atomic.AddUint64(&p.statOK, 1)
 			}
@@ -80,12 +96,6 @@ func (p *Poller) collector() {
 			mdata.Mac = request.Mac
 			mdata.SnmpIndex = request.SnmpIndex
 			mdata.CmtsDbId = request.CmtsId
-			//			if mdata.Err != nil {
-			//				log.Printf("Error while collecting data from modem (%s) (%q): %s", request.Hostname, mdata.Sysdescr, mdata.Err)
-			//				atomic.AddUint64(&p.statError, 1)
-			//			} else {
-
-			// insertModemData(mdata, *p.ModemDataSink)
 			err = p.dbModemUpdater.UpdateModemData(mdata)
 			if err != nil {
 				log.Printf("error: updating modem in database failed: %v\n", err)
@@ -95,18 +105,18 @@ func (p *Poller) collector() {
 	}
 }
 
-func (p *Poller) Run() {
+func (p *PollWorker) Run() {
 	log.Printf("Starting %d modem data collectors\n", p.WorkerCount)
 	for i := 0; i < p.WorkerCount; i++ {
 		go p.collector()
 	}
 }
 
-func (p *Poller) Stop() {
+func (p *PollWorker) Stop() {
 	close(p.requestChan)
 	p.wg.Wait()
 }
 
-func (p *Poller) StopCollector() {
+func (p *PollWorker) StopCollector() {
 	close(p.requestChan)
 }

@@ -3,6 +3,8 @@ package cmts
 import (
 	"crypto/sha512"
 	"encoding/binary"
+	"github.com/sedl/docsis-pnm/internal/constants"
+	"github.com/sedl/docsis-pnm/internal/modem"
 	"github.com/sedl/docsis-pnm/internal/types"
 	"log"
 	"sync/atomic"
@@ -40,7 +42,7 @@ func (cmts *Cmts) updateModemList() error {
 			continue
 		}
 		// log.Printf("debug: found modem %s on %s", modem_.MAC.String(), cmts.Hostname)
-		if modem_.Status != CmStatusRegistrationComplete {
+		if modem_.Status != constants.CmStatusRegistrationComplete {
 			mOffline++
 			continue
 		}
@@ -86,7 +88,7 @@ func (cmts *Cmts) ModemScheduler() {
 			for i := range bucket[pos] {
 				mdm := bucket[pos][i]
 
-				request := &types.ModemPollRequest{
+				request := &modem.Poller{
 					Hostname:  mdm.IP.String(),
 					Community: cmts.GetModemCommunity(mdm.MAC),
 					// Community: config.Configuration.Snmp.Community,

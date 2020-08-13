@@ -2,8 +2,8 @@ package api
 
 import (
 	"github.com/gorilla/mux"
+	consts "github.com/sedl/docsis-pnm/internal/constants"
 	db2 "github.com/sedl/docsis-pnm/internal/db"
-	"github.com/sedl/docsis-pnm/internal/modem"
 	"github.com/sedl/docsis-pnm/internal/types"
 	"net/http"
 	"strconv"
@@ -23,15 +23,15 @@ func convertToModemJson(record *types.ModemRecord) *ModemJson {
 
 	var docsver string
 	switch record.DocsisVersion {
-	case modem.DocsVers10:
+	case consts.DocsVers10:
 		docsver = "docs_10"
-	case modem.DocsVer11:
+	case consts.DocsVer11:
 		docsver = "docs_11"
-	case modem.DocsVer20:
+	case consts.DocsVer20:
 		docsver = "docs_20"
-	case modem.DocsVer30:
+	case consts.DocsVer30:
 		docsver = "docs_30"
-	case modem.DocsVer31:
+	case consts.DocsVer31:
 		docsver = "docs_31"
 	default:
 		docsver = "unknown"
@@ -50,7 +50,7 @@ func convertToModemJson(record *types.ModemRecord) *ModemJson {
 	return js
 }
 
-func (api *Api) modemsAll(w http.ResponseWriter, r *http.Request) {
+func (api *Api) modemsAll(w http.ResponseWriter, _ *http.Request) {
 	api.modemsBy(w, "", false)
 }
 

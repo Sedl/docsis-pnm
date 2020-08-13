@@ -3,6 +3,7 @@ package cmts
 import (
 	"github.com/sedl/docsis-pnm/internal/config"
 	"github.com/sedl/docsis-pnm/internal/db"
+	"github.com/sedl/docsis-pnm/internal/modem"
 	"github.com/sedl/docsis-pnm/internal/pgdbsyncer"
 	"github.com/sedl/docsis-pnm/internal/snmp"
 	"github.com/sedl/docsis-pnm/internal/types"
@@ -14,6 +15,10 @@ import (
 	"time"
 )
 
+type ModemPollWorkerInterface interface {
+	Poll(request *modem.Poller) error
+}
+
 type Cmts struct {
 	Snmp              *gosnmp.GoSNMP
 	modemBucket       [][]*types.ModemInfo
@@ -23,7 +28,7 @@ type Cmts struct {
 
 	DBBackend     types.DbInterface
 	upstreamCache *db.CMTSUpstreamCache
-	poller        types.ModemPollWorkerInterface
+	poller        ModemPollWorkerInterface
 	dbRec         types.CMTSRecord
 	stopChannel   chan struct{}
 	modemsOnline  int32
@@ -48,7 +53,7 @@ func (cmts *Cmts) ValueOfModemsOffline() int32 {
 func NewCmts(
 		dbRec *types.CMTSRecord,
 		dbInterface types.DbInterface,
-		modemPoller types.ModemPollWorkerInterface,
+		modemPoller ModemPollWorkerInterface,
 		config *config.Config,
 		dbSyncer *pgdbsyncer.PgDbSyncer,
 		) (*Cmts, error) {

@@ -1,18 +1,8 @@
 package types
 
-type CmStatus int
+import "github.com/sedl/docsis-pnm/internal/constants"
 
-const (
-	CmStatusOther                     = 1
-	CmStatusRanging                   = 2
-	CmStatusRangingAborted            = 3
-	CmStatusRangingComplete           = 4
-	CmStatusIpComplete                = 5
-	CmStatusRegistrationComplete      = 6
-	CmStatusAccessDenied              = 7
-	CmStatusOperational               = 8
-	CmStatusRegisteredBPIInitializing = 9
-)
+type CmStatus int
 
 var cmStatusString = []string{
 	"Unknown",
@@ -28,7 +18,7 @@ var cmStatusString = []string{
 }
 
 func (status CmStatus) String() string {
-	if status < 1 || status > CmStatusRegisteredBPIInitializing {
+	if status < 1 || status > constants.CmStatusRegisteredBPIInitializing {
 		return "Unknown"
 	}
 

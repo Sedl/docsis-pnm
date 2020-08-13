@@ -4,7 +4,7 @@ import (
 	"github.com/sedl/docsis-pnm/internal/cmts"
 	"github.com/sedl/docsis-pnm/internal/config"
 	"github.com/sedl/docsis-pnm/internal/db"
-	"github.com/sedl/docsis-pnm/internal/modem"
+	"github.com/sedl/docsis-pnm/internal/pollworker"
 	"github.com/sedl/docsis-pnm/internal/pgdbsyncer"
 	"github.com/sedl/docsis-pnm/internal/types"
 	"log"
@@ -14,7 +14,7 @@ import (
 // Manager does all the plumbing between the different components
 type Manager struct {
 	db *db.Postgres
-	modemPoller *modem.Poller
+	modemPoller *pollworker.PollWorker
 	dbSyncer *pgdbsyncer.PgDbSyncer
 	cmtsList []*cmts.Cmts
 	config *config.Config
@@ -43,7 +43,7 @@ func NewManager(config *config.Config) (*Manager, error){
 
 	// start modem poller goroutines
 	log.Println("debug: init modem pollers")
-	poller := modem.NewPoller(&config.Snmp, dbSyncer)
+	poller := pollworker.NewPollWorker(&config.Snmp, dbSyncer)
 
 	manager := &Manager{
 		db: pg,

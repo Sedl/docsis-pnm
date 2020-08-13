@@ -44,7 +44,20 @@ func (api *Api) modemLiveStatus(w http.ResponseWriter, r *http.Request) {
         }
     }
 
-    mdata, err := modem.Poll(mdm.IP.String(), mdm.Mac, community)
+    poller := modem.Poller{
+        Hostname:  mdm.IP.String(),
+        Mac:       mdm.Mac,
+        SnmpIndex: 0,
+        Community: community,
+    }
+
+    err = poller.Connect()
+    if err != nil {
+        HandleServerError(w, err)
+        return
+    }
+
+    mdata, err := poller.Poll()
     if err != nil {
         HandleServerError(w, err)
         return

@@ -1,8 +1,6 @@
 package types
 
-import (
-	"net"
-)
+import "net"
 
 type ModemData struct {
 	Sysdescr        string                 `json:"sysdescr"`
@@ -22,12 +20,3 @@ type ModemData struct {
 	Uptime          uint32                 `json:"uptime"`
 }
 
-type ModemPollRequest struct {
-	Hostname string // hostname or IP
-	// CmtsId The database ID where the modem is currently active. This is here so the database gets an update of the
-	// modems location. The location can change because customers tend to carry modems around...
-	CmtsId    int32
-	Mac       net.HardwareAddr
-	SnmpIndex int32
-	Community string
-}

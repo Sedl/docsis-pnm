@@ -1,21 +1,12 @@
 package cmts
 
 import (
+    "github.com/sedl/docsis-pnm/internal/constants"
     "github.com/sedl/docsis-pnm/internal/snmp"
     "github.com/sedl/docsis-pnm/internal/types"
     "log"
     "time"
 )
-
-const (
-    docsIf3CmtsCmUsStatusRxPower = ".1.3.6.1.4.1.4491.2.1.20.1.4.1.3"
-    docsIf3CmtsCmUsStatusSignalNoise = ".1.3.6.1.4.1.4491.2.1.20.1.4.1.4"
-    docsIf3CmtsCmUsStatusMicroreflections = ".1.3.6.1.4.1.4491.2.1.20.1.4.1.5"
-    docsIf3CmtsCmUsStatusUnerroreds = ".1.3.6.1.4.1.4491.2.1.20.1.4.1.7"
-    docsIf3CmtsCmUsStatusCorrecteds = ".1.3.6.1.4.1.4491.2.1.20.1.4.1.8"
-    docsIf3CmtsCmUsStatusUncorrectables = ".1.3.6.1.4.1.4491.2.1.20.1.4.1.9"
-)
-
 
 func (cmts *Cmts) pollModemUpstreams() (error, map[int]map[int]*types.UpstreamModemCMTS) {
 
@@ -61,7 +52,7 @@ func (cmts *Cmts) pollModemUpstreams() (error, map[int]map[int]*types.UpstreamMo
         return us
     }
 
-    results, err := cmts.Snmp.BulkWalkAll(docsIf3CmtsCmUsStatusRxPower)
+    results, err := cmts.Snmp.BulkWalkAll(constants.DocsIf3CmtsCmUsStatusRxPower)
     if err != nil {
         return err, nil
     }
@@ -71,13 +62,13 @@ func (cmts *Cmts) pollModemUpstreams() (error, map[int]map[int]*types.UpstreamMo
 
         power, err := snmp.ToInt32(&result)
         if err != nil {
-            log.Printf("warning: error while fetching %s from %s: %s)\n", docsIf3CmtsCmUsStatusRxPower, cmts.ValueOfHostname(), err.Error())
+            log.Printf("warning: error while fetching %s from %s: %s)\n", constants.DocsIf3CmtsCmUsStatusRxPower, cmts.ValueOfHostname(), err.Error())
         }
         upstream = getUpstreamRecord(usid, mdmidx)
         upstream.PowerRx = power
     }
 
-    results, err = cmts.Snmp.BulkWalkAll(docsIf3CmtsCmUsStatusSignalNoise)
+    results, err = cmts.Snmp.BulkWalkAll(constants.DocsIf3CmtsCmUsStatusSignalNoise)
     if err != nil {
         return err, nil
     }
@@ -87,13 +78,13 @@ func (cmts *Cmts) pollModemUpstreams() (error, map[int]map[int]*types.UpstreamMo
 
         snr, err := snmp.ToInt32(&result)
         if err != nil {
-            log.Printf("warning: error while fetching %s from %s: %s)\n", docsIf3CmtsCmUsStatusSignalNoise, cmts.ValueOfHostname(), err.Error())
+            log.Printf("warning: error while fetching %s from %s: %s)\n", constants.DocsIf3CmtsCmUsStatusSignalNoise, cmts.ValueOfHostname(), err.Error())
         }
         upstream = getUpstreamRecord(usid, mdmidx)
         upstream.SNR = snr
     }
 
-    results, err = cmts.Snmp.BulkWalkAll(docsIf3CmtsCmUsStatusMicroreflections)
+    results, err = cmts.Snmp.BulkWalkAll(constants.DocsIf3CmtsCmUsStatusMicroreflections)
     if err != nil {
         return err, nil
     }
@@ -103,13 +94,13 @@ func (cmts *Cmts) pollModemUpstreams() (error, map[int]map[int]*types.UpstreamMo
 
         microrefl, err  := snmp.ToInt32(&result)
         if err != nil {
-            log.Printf("warning: error while fetching %s from %s: %s)\n", docsIf3CmtsCmUsStatusMicroreflections, cmts.ValueOfHostname(), err.Error())
+            log.Printf("warning: error while fetching %s from %s: %s)\n", constants.DocsIf3CmtsCmUsStatusMicroreflections, cmts.ValueOfHostname(), err.Error())
         }
         upstream = getUpstreamRecord(usid, mdmidx)
         upstream.Microrefl = microrefl
     }
 
-    results, err = cmts.Snmp.BulkWalkAll(docsIf3CmtsCmUsStatusUnerroreds)
+    results, err = cmts.Snmp.BulkWalkAll(constants.DocsIf3CmtsCmUsStatusUnerroreds)
     if err != nil {
         return err, nil
     }
@@ -119,13 +110,13 @@ func (cmts *Cmts) pollModemUpstreams() (error, map[int]map[int]*types.UpstreamMo
 
         unerroreds, err  := snmp.ToInt64(&result)
         if err != nil {
-            log.Printf("warning: error while fetching %s from %s: %s)\n", docsIf3CmtsCmUsStatusUnerroreds, cmts.ValueOfHostname(), err.Error())
+            log.Printf("warning: error while fetching %s from %s: %s)\n", constants.DocsIf3CmtsCmUsStatusUnerroreds, cmts.ValueOfHostname(), err.Error())
         }
         upstream = getUpstreamRecord(usid, mdmidx)
         upstream.Unerroreds = unerroreds
     }
 
-    results, err = cmts.Snmp.BulkWalkAll(docsIf3CmtsCmUsStatusCorrecteds)
+    results, err = cmts.Snmp.BulkWalkAll(constants.DocsIf3CmtsCmUsStatusCorrecteds)
     if err != nil {
         return err, nil
     }
@@ -135,13 +126,13 @@ func (cmts *Cmts) pollModemUpstreams() (error, map[int]map[int]*types.UpstreamMo
 
         correcteds, err  := snmp.ToInt64(&result)
         if err != nil {
-            log.Printf("warning: error while fetching %s from %s: %s)\n", docsIf3CmtsCmUsStatusCorrecteds, cmts.ValueOfHostname(), err.Error())
+            log.Printf("warning: error while fetching %s from %s: %s)\n", constants.DocsIf3CmtsCmUsStatusCorrecteds, cmts.ValueOfHostname(), err.Error())
         }
         upstream = getUpstreamRecord(usid, mdmidx)
         upstream.Correcteds = correcteds
     }
 
-    results, err = cmts.Snmp.BulkWalkAll(docsIf3CmtsCmUsStatusUncorrectables)
+    results, err = cmts.Snmp.BulkWalkAll(constants.DocsIf3CmtsCmUsStatusUncorrectables)
     if err != nil {
         return err, nil
     }
@@ -151,7 +142,7 @@ func (cmts *Cmts) pollModemUpstreams() (error, map[int]map[int]*types.UpstreamMo
 
         uncorr, err  := snmp.ToInt64(&result)
         if err != nil {
-            log.Printf("warning: error while fetching %s from %s: %s)\n", docsIf3CmtsCmUsStatusUncorrectables, cmts.ValueOfHostname(), err.Error())
+            log.Printf("warning: error while fetching %s from %s: %s)\n", constants.DocsIf3CmtsCmUsStatusUncorrectables, cmts.ValueOfHostname(), err.Error())
         }
         upstream = getUpstreamRecord(usid, mdmidx)
         upstream.Erroreds = uncorr
