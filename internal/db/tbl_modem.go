@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"github.com/sedl/docsis-pnm/internal/misc"
 	"github.com/sedl/docsis-pnm/internal/types"
 	"net"
 )
@@ -122,7 +123,7 @@ func (db *Postgres) ModemGetByMac(mac net.HardwareAddr) (*types.ModemRecord, err
 	if err != nil {
 		return nil, err
 	}
-	defer CloseOrLog(rows)
+	defer misc.CloseOrLog(rows)
 
 	row, err := rows.Next()
 	return row, err

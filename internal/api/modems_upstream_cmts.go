@@ -4,6 +4,7 @@ import (
     "database/sql"
     "github.com/gorilla/mux"
     "github.com/sedl/docsis-pnm/internal/db"
+    "github.com/sedl/docsis-pnm/internal/misc"
     "github.com/sedl/docsis-pnm/internal/types"
     "net/http"
     "strconv"
@@ -99,7 +100,7 @@ func (api *Api) modemsUpstreamCMTSLatest(w http.ResponseWriter, r *http.Request)
         HandleServerError(w, err)
         return
     }
-    defer db.CloseOrLog(query)
+    defer misc.CloseOrLog(query)
 
     history, err := query.Next()
     if err != nil {

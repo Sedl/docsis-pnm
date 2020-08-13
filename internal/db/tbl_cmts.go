@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/sedl/docsis-pnm/internal/misc"
 	"github.com/sedl/docsis-pnm/internal/types"
 )
 
@@ -24,7 +25,7 @@ func (db *Postgres) InsertCMTS(cmts *types.CMTSRecord) (err error) {
 	if err != nil {
 		return
 	}
-	defer CloseOrLog(rows)
+	defer misc.CloseOrLog(rows)
 	rows.Next()
 
 	var dbId int32
@@ -50,7 +51,7 @@ func (db *Postgres) GetCMTSByHostname(hostname string) (*types.CMTSRecord, error
 	if err != nil {
 		return nil, err
 	}
-	defer CloseOrLog(q)
+	defer misc.CloseOrLog(q)
 
 	return q.Next()
 }
@@ -66,7 +67,7 @@ func (db *Postgres) GetCMTSById(id uint32) (*types.CMTSRecord, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer CloseOrLog(rows)
+	defer misc.CloseOrLog(rows)
 
 	return rows.Next()
 }

@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/sedl/docsis-pnm/internal/config"
+	"github.com/sedl/docsis-pnm/internal/migration"
 	"github.com/sedl/docsis-pnm/internal/types"
-	"io"
 	"log"
 	"strings"
 	"sync"
@@ -35,7 +35,7 @@ func NewPostgres(cfg config.Db) (*Postgres, error) {
 // Run starts all necessary goroutines
 func (db *Postgres) Run() {
 	// TODO make this configurable
-	go db.GoMaintenanceWorker(time.Minute * 30)
+	go migration.GoMaintenanceWorker(db, time.Minute * 30)
 }
 
 func (db *Postgres) GetConn() (dbc *sql.DB, err error) {
@@ -64,28 +64,6 @@ func (db *Postgres) GetConn() (dbc *sql.DB, err error) {
 	}
 	return nil, nil
 }
-
-func CloseOrLog(intf io.Closer) {
-
-	switch intf.(type) {
-	case *sql.DB:
-		err := (intf).(*sql.DB).Close()
-		if err != nil {
-			log.Println(err)
-		}
-	case *sql.Rows:
-		err := (intf).(*sql.Rows).Close()
-		if err != nil {
-			log.Println(err)
-		}
-	default:
-		err := intf.Close()
-		if err != nil {
-			log.Println(err)
-		}
-	}
-}
-
 
 func tableUpdate(conn *sql.DB, updateQuery string, whereValue interface{}, changes map[string]interface{}) error {
 

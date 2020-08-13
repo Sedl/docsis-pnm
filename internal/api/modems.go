@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	consts "github.com/sedl/docsis-pnm/internal/constants"
 	db2 "github.com/sedl/docsis-pnm/internal/db"
+	"github.com/sedl/docsis-pnm/internal/misc"
 	"github.com/sedl/docsis-pnm/internal/types"
 	"net/http"
 	"strconv"
@@ -88,7 +89,7 @@ func (api *Api) modemsBy(w http.ResponseWriter, where string, single bool, args 
 		HandleServerError(w, err)
 		return
 	}
-	defer db2.CloseOrLog(query)
+	defer misc.CloseOrLog(query)
 
 	if single {
 		mdm, err := query.Next()

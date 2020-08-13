@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"github.com/sedl/docsis-pnm/internal/misc"
 	"github.com/sedl/docsis-pnm/internal/types"
 )
 
@@ -59,7 +60,7 @@ func (db *Postgres) InsertCMTSUpstream(record *types.CMTSUpstreamRecord) error {
 	if err != nil {
 		return err
 	}
-	defer CloseOrLog(rows)
+	defer misc.CloseOrLog(rows)
 
 	rows.Next()
 
@@ -131,7 +132,7 @@ func (db *Postgres) GetCMTSUpstreamByDescr(cmtsId int32, descr string) (*types.C
 	if err != nil {
 		return nil, err
 	}
-	defer CloseOrLog(rows)
+	defer misc.CloseOrLog(rows)
 
 	// upstream was not found in database
 	if ! rows.Next() {
@@ -165,7 +166,7 @@ func (db *Postgres) GetCMTSUpstreamBySnmpIndex(cmtsId, idx int) (*types.CMTSUpst
 	if err != nil {
 		return nil, err
 	}
-	defer CloseOrLog(rows)
+	defer misc.CloseOrLog(rows)
 
 	// upstream was not found in database
 	if ! rows.Next() {

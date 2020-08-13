@@ -22,7 +22,6 @@ type Manager struct {
 
 
 func NewManager(config *config.Config) (*Manager, error){
-
 	// initialize database stuff
 	log.Println("debug: connecting to database")
 	pg, err := db.NewPostgres(config.Db)
