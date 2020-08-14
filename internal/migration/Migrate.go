@@ -8,6 +8,9 @@ import (
 const (
     // PartitionInterval defines the interval in seconds by which the performace data tables are getting partitioned
     PartitionInterval = 86400
+
+    // PartitionRetentionCount is the number of partitions to keep, older partitions will get deleted
+    PartitionRetentionCount = 14
 )
 
 // Migrate checks the current database schema revision and updates the schema appropriately

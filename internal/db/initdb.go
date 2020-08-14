@@ -17,6 +17,11 @@ func (db *Postgres) InitDb() error {
 	if err := migration.CreateAllCurrentPartitions(conn); err != nil {
 		return err
 	}
+
+	if err := migration.DropOldPartitions(conn); err != nil {
+		return err
+	}
+
 	return nil
 }
 
