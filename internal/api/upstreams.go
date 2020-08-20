@@ -6,7 +6,6 @@ import (
     "github.com/sedl/docsis-pnm/internal/db"
     "github.com/sedl/docsis-pnm/internal/types"
     "net/http"
-    "strconv"
 )
 
 const cmtsUpstreamQuery = `SELECT id, cmts_id, snmp_idx, descr, freq, alias, admin_status FROM cmts_upstream`
@@ -84,7 +83,7 @@ func (api *Api) upstreams(w http.ResponseWriter, _ *http.Request) {
         upstreams = append(upstreams, &us)
     }
 
-    w.Header().Set("X-Count", strconv.Itoa(len(upstreams)))
+    addCountHeader(w, len(upstreams))
     JsonResponse(w, upstreams)
 
 }

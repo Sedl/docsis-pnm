@@ -6,7 +6,6 @@ import (
 	"github.com/sedl/docsis-pnm/internal/misc"
 	"github.com/sedl/docsis-pnm/internal/types"
 	"net/http"
-	"strconv"
 )
 
 const modemHistoryQuery = `
@@ -136,6 +135,7 @@ func (api *Api) modemsDownstreamHistory(w http.ResponseWriter, r *http.Request) 
 	query.Where("modem." + vars.ModemColumn, "=", vars.ModemId)
 	query.Where("d.poll_time", ">=", vars.FromTs)
 	query.Where("d.poll_time", "<=", vars.ToTs)
+	defer misc.CloseOrLog(query)
 	err = query.Exec()
 	if err != nil {
 		HandleServerError(w, err)
@@ -150,7 +150,7 @@ func (api *Api) modemsDownstreamHistory(w http.ResponseWriter, r *http.Request) 
 
 	addCacheHeader(vars.ToTs, w)
 	hist, _ := history.([]*DownstreamHistory)
-	w.Header().Set("X-Count", strconv.Itoa(len(hist)))
+	addCountHeader(w, len(hist))
 	JsonResponse(w, hist)
 }
 

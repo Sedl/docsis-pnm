@@ -72,7 +72,7 @@ func (m *PgDbSyncer) Run() error {
 	}()
 
 	mdataCopy := pq.CopyIn("modem_data",
-		"modem_id", "poll_time", "error_timeout")
+		"modem_id", "poll_time", "error_timeout", "bytes_down", "bytes_up")
 	m.copyModemdata, err = db.NewCopyFrom(mdataCopy, conn, 100, m.commitInterval)
 	if err != nil {
 		return err
@@ -160,7 +160,7 @@ func (m *PgDbSyncer) insertModemData(mdata *types.ModemData) {
 	if mdata.Err != nil && strings.Contains(mdata.Err.Error(), "Request timeout") {
 		errTimeout = true
 	}
-	m.copyModemdata.Insert(mdata.DbModemId, mdata.Timestamp, errTimeout)
+	m.copyModemdata.Insert(mdata.DbModemId, mdata.Timestamp, errTimeout, mdata.BytesDown, mdata.BytesUp)
 }
 
 func (m *PgDbSyncer) updateModemData() {

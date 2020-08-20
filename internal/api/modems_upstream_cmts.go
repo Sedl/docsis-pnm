@@ -163,6 +163,6 @@ func (api *Api) modemsUpstreamCMTSHistory(w http.ResponseWriter, r *http.Request
 
     addCacheHeader(to, w)
     hist, _ := history.([]*UpstreamHistory)
-    w.Header().Set("X-Count", strconv.Itoa(len(hist)))
+    addCountHeader(w, len(hist))
     JsonResponse(w, hist)
 }

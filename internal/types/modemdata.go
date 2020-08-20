@@ -18,5 +18,6 @@ type ModemData struct {
 	DSPrimary       int32                  `json:"ds_primary"`
 	OfdmDownstreams *OfdmDownstreamHistory `json:"-"`
 	Uptime          uint32                 `json:"uptime"`
+	BytesUp         uint64                 `json:"bytes_up"`
+	BytesDown       uint64                 `json:"bytes_down"`
 }
-

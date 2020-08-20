@@ -9,8 +9,10 @@ Features
 ---
 * RESTful API
 * PostgreSQL database for history data with automatic table partitioning
+* Automatic deletion of data older than 14 days
 * Collects downstream history directly from the modem via SNMP
 * Collects upstream history directly from the CMTS
+* Per modem traffic accounting
 * Appropriate caching headers for caching history data older than one hour. See /nginx-cache and /docker-compose.yml for more details.
 * Cloud native [Docker images](https://hub.docker.com/r/stephan256/docsis-pnm)
 

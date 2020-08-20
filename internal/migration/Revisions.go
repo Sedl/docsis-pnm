@@ -10,6 +10,7 @@ var Revisions = []RevUpgradeFunc{
     rev2,
     rev3,
     rev4,
+    rev5,
 }
 
 var partitions = []string{

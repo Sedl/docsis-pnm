@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: docsis-pnm API
-  version: 2.0.0
+  version: 2.1.0
 servers: 
   - url: /
 paths:
@@ -342,6 +342,37 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/UpstreamHistoryModem'
+
+  /modems/{modemId}/traffic/{fromTS}/{toTS}:
+    get:
+      tags:
+        - Modem
+      parameters:
+        - $ref: '#/components/parameters/modemId'
+        - $ref: '#/components/parameters/fromTS'
+        - $ref: '#/components/parameters/toTS'
+      description: |
+        Returns the transferred bytes of the modem. The values are
+        read from the modem's MAC interface and include the DOCSIS protocol overhead.<br>
+        Due to the overhead and the often not very reliable modem implementation, this
+        data is not suitable for billing purposes.<br>
+        The values represent the increasing byte counters since reset or start of the modem. On older or simpler
+        devices, this byte counter is sometimes a 32 bit unsigned integer and might overflow.<br>
+        The returned values are in this format:
+        [<unix_timestamp>,<bytes_down>,<bytes_up>]
+      responses:
+        200:
+          headers:
+            X-Count:
+              $ref: '#/components/headers/X-Count'
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransferHistory'
+                
 
 components:
 
@@ -717,6 +748,14 @@ components:
           format: int32
           description: Modulation of the channel
 
+    TransferHistory:
+      type: array
+      example: [1597904009,63455680781,7679324455]
+      description: "[<unix_timestamp>,<bytes_down>,<bytes_up>]"
+      items:
+        type: integer
+        format: int64
+      
     DownstreamHistory:
       properties:
         ts:

@@ -1,6 +1,7 @@
 package modem
 
 import (
+    "fmt"
     "github.com/sedl/docsis-pnm/internal/constants"
     snmp2 "github.com/sedl/docsis-pnm/internal/snmp"
     "github.com/sedl/docsis-pnm/internal/types"
@@ -66,11 +67,14 @@ func (p *Poller) Poll() (data *types.ModemData, err error) {
         return nil, err
     }
 
-    // Look for OFDM downstream
+    // Look for OFDM downstream and MAC interface
     ofdmDownstreamId := 0
+    macInterface := 0
     for idx, value := range iftypes {
         if value == 277 {
             ofdmDownstreamId = idx
+        } else if value == 127 {
+            macInterface = idx
         }
     }
 
@@ -96,8 +100,56 @@ func (p *Poller) Poll() (data *types.ModemData, err error) {
         return
     }
 
+    if err = p.getByteCount(macInterface, data); err != nil {
+        log.Printf("error getting byte counters of MAC interface from modem %s: %s", p.Hostname, err)
+        data.Err = err
+        return
+    }
+
     data.QueryTime = int64(time.Now().Sub(start))
     return
+}
+
+func (p *Poller) getByteCount(macIntfIndex int, mdata *types.ModemData) error {
+    if macIntfIndex == 0 {
+        return nil
+    }
+    idx := fmt.Sprintf(".%d", macIntfIndex)
+    result, err := p.snmp.Get([]string{
+        constants.IfHCInOctets + idx,
+        constants.IfHCOutOctets + idx,
+        constants.IfInOctets + idx,
+        constants.IfOutOctets + idx,
+    })
+    if err != nil {
+        return err
+    }
+
+    var outOctets, inOctets uint32
+
+    for _, pdu := range result.Variables {
+        oid, _ := snmp2.SliceOID(pdu.Name)
+        switch oid {
+        case constants.IfHCOutOctets:
+            mdata.BytesUp, _ = snmp2.ToUint64(&pdu)
+        case constants.IfHCInOctets:
+            mdata.BytesDown, _ = snmp2.ToUint64(&pdu)
+        case constants.IfInOctets:
+            inOctets,  _ = snmp2.ToUint32(&pdu)
+        case constants.IfOutOctets:
+            outOctets, _ = snmp2.ToUint32(&pdu)
+        }
+    }
+
+    // use 32 bit counters as alternative source
+    if mdata.BytesUp == 0 && outOctets > 0 {
+        mdata.BytesUp = uint64(outOctets)
+    }
+    if mdata.BytesDown == 0 && inOctets > 0 {
+        mdata.BytesDown = uint64(inOctets)
+    }
+
+    return nil
 }
 
 func (p *Poller) modemBasicInfo(data *types.ModemData) error {

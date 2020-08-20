@@ -1,23 +1,27 @@
 package constants
 
 const (
-	DocsIfDocsisBaseCapability                         = ".1.3.6.1.2.1.10.127.1.1.5.0"
-	SysDescr                                           = ".1.3.6.1.2.1.1.1.0"
-	SysUpTimeInstance                                  = ".1.3.6.1.2.1.1.3.0"
-	DocsIf31CmDocsisBaseCapability                     = ".1.3.6.1.4.1.4491.2.1.28.1.1.0"
-	DocsVers10                                         = 1
-	DocsVer11                                          = 2
-	DocsVer20                                          = 3
-	DocsVer30                                          = 4
-	DocsVer31                                          = 5
-	IfType                                             = ".1.3.6.1.2.1.2.2.1.3"
-	DocsIf3CmStatusUsTxPower                           = ".1.3.6.1.4.1.4491.2.1.20.1.2.1.1"
-	DocsIfUpChannelId                                  = ".1.3.6.1.2.1.10.127.1.1.2.1.1"
-	DocsIfUpChannelFrequency                           = ".1.3.6.1.2.1.10.127.1.1.2.1.2"
-	DocsIfUpChannelWidth                               = ".1.3.6.1.2.1.10.127.1.1.2.1.3"
-	DocsIfUpChannelModulationProfile                   = ".1.3.6.1.2.1.10.127.1.1.2.1.4"
-	DocsIfUpChannelTxTimingOffset                      = ".1.3.6.1.2.1.10.127.1.1.2.1.6"
-	DocsIfCmStatusTxPower                              = ".1.3.6.1.2.1.10.127.1.2.2.1.3"
+	DocsIfDocsisBaseCapability       = ".1.3.6.1.2.1.10.127.1.1.5.0"
+	SysDescr                         = ".1.3.6.1.2.1.1.1.0"
+	SysUpTimeInstance                = ".1.3.6.1.2.1.1.3.0"
+	DocsIf31CmDocsisBaseCapability   = ".1.3.6.1.4.1.4491.2.1.28.1.1.0"
+	DocsVers10                       = 1
+	DocsVer11                        = 2
+	DocsVer20                        = 3
+	DocsVer30                        = 4
+	DocsVer31                        = 5
+	IfType                           = ".1.3.6.1.2.1.2.2.1.3"
+	IfInOctets                       = ".1.3.6.1.2.1.2.2.1.10"
+	IfOutOctets                      = ".1.3.6.1.2.1.2.2.1.16"
+	IfHCInOctets                     = ".1.3.6.1.2.1.31.1.1.1.6"
+	IfHCOutOctets                    = ".1.3.6.1.2.1.31.1.1.1.10"
+	DocsIf3CmStatusUsTxPower         = ".1.3.6.1.4.1.4491.2.1.20.1.2.1.1"
+	DocsIfUpChannelId                = ".1.3.6.1.2.1.10.127.1.1.2.1.1"
+	DocsIfUpChannelFrequency         = ".1.3.6.1.2.1.10.127.1.1.2.1.2"
+	DocsIfUpChannelWidth             = ".1.3.6.1.2.1.10.127.1.1.2.1.3"
+	DocsIfUpChannelModulationProfile = ".1.3.6.1.2.1.10.127.1.1.2.1.4"
+	DocsIfUpChannelTxTimingOffset    = ".1.3.6.1.2.1.10.127.1.1.2.1.6"
+	DocsIfCmStatusTxPower            = ".1.3.6.1.2.1.10.127.1.2.2.1.3"
 
 	DocsIf31CmDsOfdmChannelPowerCenterFrequency        = ".1.3.6.1.4.1.4491.2.1.28.1.11.1.2"
 	DocsIf31CmDsOfdmChannelPowerRxPower                = ".1.3.6.1.4.1.4491.2.1.28.1.11.1.3"
@@ -33,7 +37,6 @@ const (
 	DocsIf3CmtsCmUsStatusUncorrectables                = ".1.3.6.1.4.1.4491.2.1.20.1.4.1.9"
 )
 
-
 const (
 	CmStatusOther                     = 1
 	CmStatusRanging                   = 2
@@ -45,4 +48,3 @@ const (
 	CmStatusOperational               = 8
 	CmStatusRegisteredBPIInitializing = 9
 )
-

@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sedl/docsis-pnm/internal/manager"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -23,6 +24,10 @@ func addCacheHeader(timestamp int64, w http.ResponseWriter) {
 	if (timestamp + cacheOffset) < now {
 		w.Header().Set("Cache-Control", "public,max-age=31536000,immutable")
 	}
+}
+
+func addCountHeader(w http.ResponseWriter,count int) {
+	w.Header().Set("X-Count", strconv.Itoa(count))
 }
 
 func JsonResponse(w http.ResponseWriter, jsonobj interface{}) {
@@ -57,6 +62,8 @@ func Register(router *mux.Router, manager *manager.Manager) {
 
 	router.HandleFunc("/modems/{modemId}/upstreamHistoryFromModem/latest", api.modemUpstreamLatest)
 	router.HandleFunc("/modems/{modemId}/upstreamHistoryFromModem/{fromTS:[0-9]+}/{toTS:[0-9]+}", api.modemUpstream)
+
+	router.HandleFunc("/modems/{modemId}/traffic/{fromTS:[0-9]+}/{toTS:[0-9]+}", api.ModemTraffic)
 
 	router.HandleFunc("/upstreams", api.upstreams)
 	router.HandleFunc("/upstreams/{upstreamId:[0-9]+}", api.upstreamsById)

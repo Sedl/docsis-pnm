@@ -4,7 +4,6 @@ import (
     "database/sql"
     "github.com/sedl/docsis-pnm/internal/db"
     "net/http"
-    "strconv"
 )
 
 const modemUpstreamHistoryQuery = `
@@ -105,7 +104,7 @@ func (api *Api) modemUpstream (w http.ResponseWriter, r *http.Request) {
     hist := history.([]*ModemUpstreamHistory)
 
     addCacheHeader(pvars.ToTs, w)
-    w.Header().Set("X-Count", strconv.Itoa(len(hist)))
+    addCountHeader(w, len(hist))
     JsonResponse(w, hist)
 }
 
