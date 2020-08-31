@@ -11,13 +11,15 @@ import (
 )
 
 type ModemJson struct {
-	Id            uint64 `json:"modem_id"`
-	CmtsId        int32  `json:"cmts_id"`
-	Mac           string `json:"mac"`
-	Sysdescr      string `json:"sysdescr"`
-	IPAddr        string `json:"ipaddr"`
-	SnmpIndex     uint32 `json:"snmp_index"`
-	DocsisVersion string `json:"docsis_version"`
+	Id                  uint64 `json:"modem_id"`
+	CmtsId              int32  `json:"cmts_id"`
+	Mac                 string `json:"mac"`
+	Sysdescr            string `json:"sysdescr"`
+	IPAddr              string `json:"ipaddr"`
+	SnmpIndex           uint32 `json:"snmp_index"`
+	DocsisVersion       string `json:"docsis_version"`
+	DownstreamPrimaryHz int32  `json:"ds_primary_hz"`
+	CmtsDownstreamIndex int32  `json:"cmts_ds_idx"`
 }
 
 func convertToModemJson(record *types.ModemRecord) *ModemJson {
@@ -39,13 +41,15 @@ func convertToModemJson(record *types.ModemRecord) *ModemJson {
 	}
 
 	js := &ModemJson{
-		Id:            record.ID,
-		CmtsId:        record.CmtsId,
-		Mac:           record.Mac.String(),
-		Sysdescr:      record.SysDescr,
-		IPAddr:        record.IP.String(),
-		SnmpIndex:     uint32(record.SnmpIndex),
-		DocsisVersion: docsver,
+		Id:                  record.ID,
+		CmtsId:              record.CmtsId,
+		Mac:                 record.Mac.String(),
+		Sysdescr:            record.SysDescr,
+		IPAddr:              record.IP.String(),
+		SnmpIndex:           uint32(record.SnmpIndex),
+		DocsisVersion:       docsver,
+		DownstreamPrimaryHz: record.DSPrimary,
+		CmtsDownstreamIndex: record.CmtsDsIndex,
 	}
 
 	return js

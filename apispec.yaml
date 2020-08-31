@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: docsis-pnm API
-  version: 2.2.0
+  version: 2.3.0
 servers: 
   - url: /
 paths:
@@ -638,6 +638,16 @@ components:
             - 'unknown'
           readOnly: true
           description: DOCSIS version this modem is running on
+        ds_primary_hz:
+          type: integer
+          format: int32
+          description: Frequency of downstream primary channel
+          example: 618000000
+        cmts_ds_idx:
+          type: integer
+          format: int32
+          description: SNMP index of the downstream channel on the CMTS
+          example: 21993
     
     ModemLiveStatus:
       properties:
