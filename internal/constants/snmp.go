@@ -35,6 +35,17 @@ const (
 	DocsIf3CmtsCmUsStatusUnerroreds                    = ".1.3.6.1.4.1.4491.2.1.20.1.4.1.7"
 	DocsIf3CmtsCmUsStatusCorrecteds                    = ".1.3.6.1.4.1.4491.2.1.20.1.4.1.8"
 	DocsIf3CmtsCmUsStatusUncorrectables                = ".1.3.6.1.4.1.4491.2.1.20.1.4.1.9"
+
+	DocsPnmBulkDestIpAddr = ".1.3.6.1.4.1.4491.2.1.27.1.1.1.2"
+	DocsPnmBulkDestIpAddrType = ".1.3.6.1.4.1.4491.2.1.27.1.1.1.1"
+	// add OFDM downstream interface index to the end of the oid
+	DocsPnmCmDsOfdmRxMerFileName = ".1.3.6.1.4.1.4491.2.1.27.1.2.5.1.8"
+	// add OFDM downstream interface index to the end of the oid
+	DocsPnmCmDsOfdmRxMerFileEnable = ".1.3.6.1.4.1.4491.2.1.27.1.2.5.1.1"
+	AddrTypeIpv4 = 1
+	AddrTypeIpv6 = 2
+
+	IntfTypeOfdmDownstream = 277
 )
 
 const (

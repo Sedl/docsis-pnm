@@ -22,6 +22,7 @@ func (api *Api) modemLiveStatus(w http.ResponseWriter, r *http.Request) {
     query, err := db2.NewModemQuery(conn, vars.ModemColumn + " = $1", vars.ModemId)
     if err != nil {
         HandleServerError(w, err)
+        return
     }
 
     mdm, err := query.Next()
@@ -34,14 +35,10 @@ func (api *Api) modemLiveStatus(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    community := "public"
-    for _, cmtso := range api.Manager.GetCmtsList() {
-        if cmtso.ValueOfDbId() != mdm.CmtsId {
-            continue
-        } else {
-            community = cmtso.GetModemCommunity(mdm.Mac)
-            break
-        }
+    community := api.Manager.GetCmtsModemCommunity(mdm.CmtsId)
+
+    if community == "" {
+        community = "public"
     }
 
     poller := modem.Poller{

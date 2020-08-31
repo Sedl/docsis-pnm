@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: docsis-pnm API
-  version: 2.1.0
+  version: 2.2.0
 servers: 
   - url: /
 paths:
@@ -373,7 +373,26 @@ paths:
                 items:
                   $ref: '#/components/schemas/TransferHistory'
                 
-
+  /modems/{modemId}/pnm/OFDMDownstreamMER:
+    post:
+      tags:
+        - Modem
+      parameters: 
+        - $ref: '#/components/parameters/modemId'
+      description: |
+        Returns DOCSIS 3.1 OFDM downstream MER values in dB for each OFDM subcarrier. The upload
+        from the modem is done via TFTP and then parsed. For further information
+        how this works you can consult Appendix D in the 
+        <a href="https://specification-search.cablelabs.com/CM-SP-CM-OSSIv3.1">
+        DOCSIS 3.1 specification
+        </a>
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OFDMDownstreamMERTable'
 components:
 
   headers:
@@ -462,6 +481,37 @@ components:
         format: macaddr
 
   schemas:
+  
+    OFDMDownstreamMERTable:
+      type: object
+      readOnly: true
+      properties:
+        capture_time:
+          type: integer
+          example: 1598362391
+          description: Unix timestamp
+        channel_id:
+          type: integer
+          example: 33
+          description: OFDM channel ID
+        subcarrier_zero_frequency:
+          type: integer
+          example: 833600000
+        first_active_subcarrier_index:
+          type: integer
+          example: 1422
+        subcarrier_spacing_khz:
+          type: integer
+          example: 25
+        mac:
+          type: string
+          description: MAC address of the modem
+        mer_db:
+          type: array
+          example: [32.75, 33, 31.5]
+          items:
+            type: number
+          
 
     DocsisVersion:
       type: string

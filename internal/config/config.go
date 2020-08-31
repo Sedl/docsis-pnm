@@ -8,6 +8,7 @@ import (
 type Config struct {
 	Snmp    Snmp
 	Db      Db
+	Tftp	Tftp
 }
 
 func Read() *Config {

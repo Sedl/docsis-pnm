@@ -28,3 +28,12 @@ connstr = "postgres://docsispnm:insecurepassword@db/docsispnm?sslmode=disable"
 # Default: 60
 # commitinterval = 60
 
+[tftp]
+# This tool has a built in TFTP server for receiving PNM related data from DOCSIS modems. You have to set this to
+# an IP address if you want this functionality or all functionality that requires a TFTP server is disabled.
+# If working in a cloud environment, most of the time the internal IP address of the container does not represent the
+# external IP address of the service. As the container can't know this address by itself, you have to set the IP address
+# on which the TFTP server is reachable from the outside.
+
+# Default: ""
+# externaladdress = "192.0.2.10"

@@ -90,7 +90,7 @@ func (cmts *Cmts) ModemScheduler() {
 
 				request := &modem.Poller{
 					Hostname:  mdm.IP.String(),
-					Community: cmts.GetModemCommunity(mdm.MAC),
+					Community: cmts.GetModemCommunity(),
 					// Community: config.Configuration.Snmp.Community,
 					CmtsId:    cmts.dbRec.Id,
 					Mac:       mdm.MAC,

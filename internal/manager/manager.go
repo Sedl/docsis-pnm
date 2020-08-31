@@ -1,13 +1,17 @@
 package manager
 
 import (
+	"errors"
 	"github.com/sedl/docsis-pnm/internal/cmts"
 	"github.com/sedl/docsis-pnm/internal/config"
 	"github.com/sedl/docsis-pnm/internal/db"
-	"github.com/sedl/docsis-pnm/internal/pollworker"
 	"github.com/sedl/docsis-pnm/internal/pgdbsyncer"
+	"github.com/sedl/docsis-pnm/internal/pollworker"
+	"github.com/sedl/docsis-pnm/internal/tftp"
 	"github.com/sedl/docsis-pnm/internal/types"
 	"log"
+	"net"
+	"sync"
 	"time"
 )
 
@@ -16,10 +20,27 @@ type Manager struct {
 	db *db.Postgres
 	modemPoller *pollworker.PollWorker
 	dbSyncer *pgdbsyncer.PgDbSyncer
-	cmtsList []*cmts.Cmts
+	cmtsList map[int32]*cmts.Cmts
 	config *config.Config
+	tftpServer *tftp.Server
+	cmtsMutex sync.RWMutex
 }
 
+
+func tftpServerInstance(cfg config.Tftp) *tftp.Server{
+	if cfg.ExternalAddress == "" {
+		log.Println("WARNING! external TFTP address not set, disabling TFTP functionality")
+		return nil
+	} else {
+		ipa := net.ParseIP(cfg.ExternalAddress)
+		if ipa == nil {
+			log.Fatalf(
+				"invalid external TFTP IP address %q. Please correct this in your config and retry",
+				cfg.ExternalAddress)
+		}
+		return tftp.NewServer(ipa)
+	}
+}
 
 func NewManager(config *config.Config) (*Manager, error){
 	// initialize database stuff
@@ -48,19 +69,30 @@ func NewManager(config *config.Config) (*Manager, error){
 		db: pg,
 		modemPoller: poller,
 		dbSyncer: dbSyncer,
-		cmtsList: make([]*cmts.Cmts, 0),
+		cmtsList: make(map[int32]*cmts.Cmts),
 		config: config,
+		tftpServer: tftpServerInstance(config.Tftp),
 	}
 
 	return manager, nil
+}
+
+func (m *Manager) GetTftpServerInstance() *tftp.Server {
+	return m.tftpServer
 }
 
 func (m *Manager) GetDbInterface () *db.Postgres {
 	return m.db
 }
 
-func (m *Manager) GetCmtsList() []*cmts.Cmts {
-	return m.cmtsList
+func (m *Manager) GetCmtsModemCommunity(cmtsId int32) string {
+	m.cmtsMutex.RLock()
+	defer m.cmtsMutex.RUnlock()
+	if cmtsobj, ok := m.cmtsList[cmtsId]; ok {
+		return cmtsobj.GetModemCommunity()
+	} else {
+		return ""
+	}
 }
 
 func (m *Manager) AddCMTS(cmtsrec *types.CMTSRecord) (*cmts.Cmts, error) {
@@ -68,7 +100,13 @@ func (m *Manager) AddCMTS(cmtsrec *types.CMTSRecord) (*cmts.Cmts, error) {
 	if err != nil {
 		return nil, err
 	}
-	m.cmtsList = append(m.cmtsList, cmtsobj)
+	m.cmtsMutex.Lock()
+	defer m.cmtsMutex.Unlock()
+	if _, ok := m.cmtsList[cmtsrec.Id]; ok {
+		return nil, errors.New("a cmts with this id already exists")
+	}
+	m.cmtsList[cmtsrec.Id] = cmtsobj
+	// m.cmtsList = append(m.cmtsList, cmtsobj)
 	return cmtsobj, nil
 }
 
@@ -97,35 +135,22 @@ func (m *Manager) AddAllCmtsFromDb() error {
 	return nil
 }
 
+// RemoveCmts returns true if the CMTS was found and removed, false otherwise
 func (m *Manager) RemoveCmts(cmtsobj *cmts.Cmts) bool {
 
 	log.Printf("debug: stopping CMTS %s\n", cmtsobj.ValueOfHostname())
 
-	found := -1
-	var pos int
-	var cmtsL *cmts.Cmts
+	id := cmtsobj.ValueOfDbId()
 
-	for pos, cmtsL = range m.cmtsList {
-	    if cmtsL == cmtsobj {
-	    	found = pos
-	    	break
-		}
-	}
-
-	if found == -1 {
+	m.cmtsMutex.Lock()
+	defer m.cmtsMutex.Unlock()
+	if cmtsobj, ok := m.cmtsList[id]; ok {
+		cmtsobj.Stop()
+		delete(m.cmtsList, id)
+		return true
+	} else {
 		return false
 	}
-
-	// remove element from slice
-	// this doesn't maintain order but we don't care
-	m.cmtsList[pos] = m.cmtsList[len(m.cmtsList)-1]
-	m.cmtsList = m.cmtsList[:len(m.cmtsList)-1]
-
-	if cmtsL != nil {
-		cmtsL.Stop()
-	}
-
-	return true
 }
 
 func (m *Manager) Run() error {
@@ -141,8 +166,15 @@ func (m *Manager) Run() error {
 	}
 
 	m.modemPoller.Run()
-	return nil
 
+	// start TFTP server
+	if m.tftpServer != nil {
+		go func() {
+			log.Fatal(m.tftpServer.ListenAndServe(":69"))
+		}()
+	}
+
+	return nil
 }
 
 func (m *Manager) Stop() {
@@ -154,5 +186,4 @@ func (m *Manager) Stop() {
 
 	m.modemPoller.Stop()
 	m.dbSyncer.Stop()
-
 }

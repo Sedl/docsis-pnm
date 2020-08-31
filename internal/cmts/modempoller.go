@@ -1,10 +1,6 @@
 package cmts
 
-import (
-	"net"
-)
-
-func (cmts *Cmts) GetModemCommunity(_ net.HardwareAddr) string {
+func (cmts *Cmts) GetModemCommunity() string {
 	comm := cmts.dbRec.SNMPModemCommunity
 	if comm == "" {
 		comm = cmts.config.Snmp.Community
