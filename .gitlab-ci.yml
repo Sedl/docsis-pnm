@@ -9,6 +9,7 @@ stages:
   - build
 
 build-debian:
+  stage: build
   image: golang:1.16-buster
   script:
     - cd cmd/docsis-pnm
