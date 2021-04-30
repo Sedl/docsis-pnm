@@ -1,0 +1,15 @@
+variables:
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
+  LC_ALL: C.UTF-8
+  DOCKER_TLS_CERTDIR: ""
+
+
+stages:
+  - build
+
+build-debian:
+  image: golang:1.16-buster
+  script:
+    - cd cmd/docsis-pnm
+    - go build
