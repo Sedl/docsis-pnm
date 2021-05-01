@@ -12,6 +12,7 @@ build-debian:
   stage: build
   image: golang:1.16-buster
   script:
+    - find . -type d -exec chmod 755 {} \; # GitLab bug
     - make deb
   artifacts:
     paths:
