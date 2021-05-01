@@ -14,7 +14,7 @@ build-debian:
   script:
     - find . -type d -exec chmod 755 {} \; # GitLab messes up file permissions
     - find . -type f -exec chmod 644 {} \;
-    - chmod 755 debian/docsis-pnm/usr/bin/docsis-pnm
+    - chmod 755 debian/docsis-pnm/DEBIAN/postinst
     - make deb
   artifacts:
     paths:
