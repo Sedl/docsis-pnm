@@ -1,8 +1,8 @@
 .idea
 .vscode
 *~
-docsis-pnm.toml
 /cmd/docsis-pnm/docsis-pnm
+/cmd/docsis-pnm/docsis-pnm.toml
 /cmd/test1
 *.deb
 /debian/docsis-pnm/DEBIAN/control

@@ -1,0 +1,39 @@
+[snmp]
+# SNMP community. Can be overwritten in the database for every modem
+# Default: "public"
+# community = "public"
+
+# Retries before considering SNMP request as failed
+# Default: 3
+# retries = 3
+
+# Timeout before considering SNMP request as failed
+# Maximum time spent trying = retries * timeout
+# Default: 5
+# timeout = 5
+
+# Poll modem every modempollinterval seconds
+# Default: 900
+# modempollinterval = 900
+
+# Start number of workers to poll modem data
+# Default: 200
+# workercount = 200
+
+[db]
+connstr = "user=docsis-pnm host=/var/run/postgresql dbname=docsis-pnm sslmode=disable"
+
+# Modem data is "piped" into the database. Do a commit every commitinterval
+# seconds
+# Default: 60
+# commitinterval = 60
+
+[tftp]
+# This tool has a built in TFTP server for receiving PNM related data from DOCSIS modems. You have to set this to
+# an IP address if you want this functionality, or all functionality that requires a TFTP server is disabled.
+# If working in a cloud environment, most of the time the internal IP address of the container does not represent the
+# external IP address of the service. As the container can't know this address by itself, you have to set the IP address
+# on which the TFTP server is reachable from the outside.
+
+# Default: ""
+# externaladdress = "192.0.2.10"
