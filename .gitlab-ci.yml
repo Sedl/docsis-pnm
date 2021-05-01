@@ -12,7 +12,9 @@ build-debian:
   stage: build
   image: golang:1.16-buster
   script:
-    - find . -type d -exec chmod 755 {} \; # GitLab bug
+    - find . -type d -exec chmod 755 {} \; # GitLab messes up file permissions
+    - find . -type f exec chmod 644 {} \;
+    - chmod 755 debian/docsis-pnm/usr/bin/docsis-pnm
     - make deb
   artifacts:
     paths:
