@@ -4,3 +4,6 @@
 docsis-pnm.toml
 /cmd/docsis-pnm/docsis-pnm
 /cmd/test1
+*.deb
+/debian/docsis-pnm/DEBIAN/control
+/debian/docsis-pnm/usr/bin/*

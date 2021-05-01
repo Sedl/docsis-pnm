@@ -12,5 +12,7 @@ build-debian:
   stage: build
   image: golang:1.16-buster
   script:
-    - cd cmd/docsis-pnm
-    - go build
+    - make deb
+  artifacts:
+    paths:
+      - debian/*.deb

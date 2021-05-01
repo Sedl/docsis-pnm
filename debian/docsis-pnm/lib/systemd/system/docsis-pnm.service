@@ -1,0 +1,10 @@
+[Unit]
+Description=DOCSIS PNM
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/docsis-pnm
+User=docsis-pnm
+
+[Install]
+WantedBy=multi-user.target
