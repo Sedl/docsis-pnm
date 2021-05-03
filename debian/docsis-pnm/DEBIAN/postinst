@@ -1,0 +1,18 @@
+#!/bin/sh
+
+case "$1" in
+    configure)
+
+        adduser --home /nonexistent --no-create-home --system docsis-pnm
+
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 0
+    ;;
+esac

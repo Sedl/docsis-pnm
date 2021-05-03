@@ -1,0 +1,21 @@
+variables:
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
+  LC_ALL: C.UTF-8
+  DOCKER_TLS_CERTDIR: ""
+
+
+stages:
+  - build
+
+build-debian:
+  stage: build
+  image: golang:1.16-buster
+  script:
+    - find . -type d -exec chmod 755 {} \; # GitLab messes up file permissions
+    - find . -type f -exec chmod 644 {} \;
+    - chmod 755 debian/docsis-pnm/DEBIAN/postinst
+    - make deb
+  artifacts:
+    paths:
+      - debian/*.deb
