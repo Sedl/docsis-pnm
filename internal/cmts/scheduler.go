@@ -41,8 +41,9 @@ func (cmts *Cmts) updateModemList() error {
 			mOffline++
 			continue
 		}
-		// log.Printf("debug: found modem %s on %s", modem_.MAC.String(), cmts.Hostname)
-		if modem_.Status != constants.CmStatusRegistrationComplete {
+
+		// skip offline modems
+		if ! (modem_.Status == constants.CmStatusRegistrationComplete || modem_.Status == constants.CmStatusOperational) {
 			mOffline++
 			continue
 		}

@@ -33,6 +33,7 @@ Tested with
 ---
 * EuroDOCSIS
 * Cisco cBR-8
+* Harmonic CableOS
   
 Tested modems
 ---
