@@ -19,8 +19,9 @@ jobs:
     - name: Build the Docker image
       run: |
         tag=${{ env.IMAGE_NAME }}:$(git rev-parse --short "$GITHUB_SHA")
+        tag_clean=$(tr : _ <<<"$tag")
         docker build . --file Dockerfile --tag $tag
-        docker save "$tag" | gzip > "${tag}.tgz"
+        docker save "$tag" | gzip > "${tag_clean}.tgz"
       
     - name: upload container image
       uses: actions/upload-artifact@v2
