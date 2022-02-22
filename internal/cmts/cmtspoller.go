@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/sedl/docsis-pnm/internal/snmp"
 	"github.com/sedl/docsis-pnm/internal/types"
-	"github.com/soniah/gosnmp"
+	"github.com/gosnmp/gosnmp"
 	"log"
 	"time"
 )

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sedl/docsis-pnm/internal/constants"
-	"github.com/soniah/gosnmp"
+	"github.com/gosnmp/gosnmp"
 	"net"
 )
 

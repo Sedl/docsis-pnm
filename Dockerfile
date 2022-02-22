@@ -1,4 +1,4 @@
-FROM golang:1.14-alpine3.12
+FROM golang:1.17-alpine3.14
 
 LABEL maintainer="Stephan Sedlmeier <stephan2048@gmail.com>"
 
@@ -7,7 +7,7 @@ COPY . .
 
 RUN cd cmd/docsis-pnm && go build -v
 
-FROM alpine:3.12
+FROM alpine:3.14
 
 RUN mkdir /etc/docsis-pnm
 

@@ -2,7 +2,7 @@ package snmp
 
 import (
 	"fmt"
-	"github.com/soniah/gosnmp"
+	"github.com/gosnmp/gosnmp"
 	"log"
 	"math"
 	"strconv"
