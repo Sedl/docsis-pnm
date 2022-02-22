@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+env:
+  REGISTRY: ghcr.io
+
 jobs:
 
   build:
@@ -13,4 +16,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      run: |
+        tag=${{ github.repository }}:$(git rev-parse --short "$GITHUB_SHA")
+        docker build . --file Dockerfile --tag $tag
+        docker save "$tag" | gzip > "${tag}.tgz"
+      
+    - name: upload container image
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ github.repository }} container image
+        path: ${{ github.repository }}*.tgz
