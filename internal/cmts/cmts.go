@@ -1,13 +1,13 @@
 package cmts
 
 import (
+	"github.com/gosnmp/gosnmp"
 	"github.com/sedl/docsis-pnm/internal/config"
 	"github.com/sedl/docsis-pnm/internal/db"
 	"github.com/sedl/docsis-pnm/internal/modem"
 	"github.com/sedl/docsis-pnm/internal/pgdbsyncer"
 	"github.com/sedl/docsis-pnm/internal/snmp"
 	"github.com/sedl/docsis-pnm/internal/types"
-	"github.com/soniah/gosnmp"
 	"log"
 	"net"
 	"sync"

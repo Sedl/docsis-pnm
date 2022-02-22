@@ -1,6 +1,6 @@
 package snmp
 
-import "github.com/soniah/gosnmp"
+import "github.com/gosnmp/gosnmp"
 
 func WalkSubtree(snmp *gosnmp.GoSNMP, oids []string) (map[string]map[int]*gosnmp.SnmpPDU, error) {
 	subtree := make(map[string]map[int]*gosnmp.SnmpPDU)

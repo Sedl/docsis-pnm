@@ -1,7 +1,7 @@
 package snmp
 
 import (
-	"github.com/soniah/gosnmp"
+	"github.com/gosnmp/gosnmp"
 )
 
 type RecordInterface interface {
