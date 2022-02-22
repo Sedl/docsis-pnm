@@ -17,17 +17,16 @@ import (
 
 // Manager does all the plumbing between the different components
 type Manager struct {
-	db *db.Postgres
+	db          *db.Postgres
 	modemPoller *pollworker.PollWorker
-	dbSyncer *pgdbsyncer.PgDbSyncer
-	cmtsList map[int32]*cmts.Cmts
-	config *config.Config
-	tftpServer *tftp.Server
-	cmtsMutex sync.RWMutex
+	dbSyncer    *pgdbsyncer.PgDbSyncer
+	cmtsList    map[int32]*cmts.Cmts
+	config      *config.Config
+	tftpServer  *tftp.Server
+	cmtsMutex   sync.RWMutex
 }
 
-
-func tftpServerInstance(cfg config.Tftp) *tftp.Server{
+func tftpServerInstance(cfg config.Tftp) *tftp.Server {
 	if cfg.ExternalAddress == "" {
 		log.Println("WARNING! external TFTP address not set, disabling TFTP functionality")
 		return nil
@@ -42,7 +41,7 @@ func tftpServerInstance(cfg config.Tftp) *tftp.Server{
 	}
 }
 
-func NewManager(config *config.Config) (*Manager, error){
+func NewManager(config *config.Config) (*Manager, error) {
 	// initialize database stuff
 	log.Println("debug: connecting to database")
 	pg, err := db.NewPostgres(config.Db)
@@ -59,19 +58,19 @@ func NewManager(config *config.Config) (*Manager, error){
 
 	log.Println("debug: init database syncer")
 	// TODO move syncer into db struct
-	dbSyncer := pgdbsyncer.NewPgDbSyncer(pg, time.Duration(config.Db.CommitInterval) * time.Second)
+	dbSyncer := pgdbsyncer.NewPgDbSyncer(pg, time.Duration(config.Db.CommitInterval)*time.Second)
 
 	// start modem poller goroutines
 	log.Println("debug: init modem pollers")
 	poller := pollworker.NewPollWorker(&config.Snmp, dbSyncer)
 
 	manager := &Manager{
-		db: pg,
+		db:          pg,
 		modemPoller: poller,
-		dbSyncer: dbSyncer,
-		cmtsList: make(map[int32]*cmts.Cmts),
-		config: config,
-		tftpServer: tftpServerInstance(config.Tftp),
+		dbSyncer:    dbSyncer,
+		cmtsList:    make(map[int32]*cmts.Cmts),
+		config:      config,
+		tftpServer:  tftpServerInstance(config.Tftp),
 	}
 
 	return manager, nil
@@ -81,7 +80,7 @@ func (m *Manager) GetTftpServerInstance() *tftp.Server {
 	return m.tftpServer
 }
 
-func (m *Manager) GetDbInterface () *db.Postgres {
+func (m *Manager) GetDbInterface() *db.Postgres {
 	return m.db
 }
 
@@ -96,7 +95,7 @@ func (m *Manager) GetCmtsModemCommunity(cmtsId int32) string {
 }
 
 func (m *Manager) AddCMTS(cmtsrec *types.CMTSRecord) (*cmts.Cmts, error) {
-    cmtsobj, err := cmts.NewCmts(cmtsrec, m.db, m.modemPoller, m.config, m.dbSyncer)
+	cmtsobj, err := cmts.NewCmts(cmtsrec, m.db, m.modemPoller, m.config, m.dbSyncer)
 	if err != nil {
 		return nil, err
 	}
@@ -110,8 +109,10 @@ func (m *Manager) AddCMTS(cmtsrec *types.CMTSRecord) (*cmts.Cmts, error) {
 	return cmtsobj, nil
 }
 
+var dnsError *net.DNSError
+
 func (m *Manager) AddAllCmtsFromDb() error {
-    pg := m.GetDbInterface()
+	pg := m.GetDbInterface()
 	cmtslist, err := pg.GetCMTSAll()
 	if err != nil {
 		return err
@@ -129,7 +130,12 @@ func (m *Manager) AddAllCmtsFromDb() error {
 		}
 		err = cmtsobj.Run()
 		if err != nil {
-			return err
+			if errors.As(err, &dnsError) {
+				log.Printf("error: DNS lookup failed, skipping host: %v\n", err)
+				continue
+			} else {
+				return err
+			}
 		}
 	}
 	return nil
