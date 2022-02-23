@@ -3,6 +3,8 @@ name: Docker Image CI
 on:
   push:
   pull_request:
+  schedule:
+    - cron: '37 13 * * 0'
 
 env:
   REGISTRY: ghcr.io
