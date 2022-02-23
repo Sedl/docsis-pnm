@@ -26,9 +26,10 @@ jobs:
         
     - name: Build and push the container image
       run: |
-        export tag=${{ env.IMAGE_NAME }}:$(git rev-parse --short "$GITHUB_SHA")
+        tag=${{ env.IMAGE_NAME }}:$(git rev-parse --short "$GITHUB_SHA")
         # tag_clean=$(tr : _ <<<"$tag")
-        docker build . --file Dockerfile --tag ${{ env.REGISTRY }}/${{ github.actor }}/$tag
+        actor="$( tr A-Z a-z <<<'${{ github.actor }}')"
+        docker build . --file Dockerfile --tag ${{ env.REGISTRY }}/$actor/$tag
         # docker save "$tag" | gzip > "${tag_clean}.tgz"
-        docker push ${{ env.REGISTRY }}/${{ github.actor }}/$tag
+        docker push ${{ env.REGISTRY }}/$actor/$tag
       
