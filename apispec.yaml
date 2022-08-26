@@ -542,7 +542,7 @@ components:
       properties:
         cmts_id:
           type: integer
-          format: uint32
+          format: int32
           example: 1
           readOnly: true
         hostname:
@@ -573,7 +573,12 @@ components:
           example: 60
           nullable: false
           description: Poll interval of the CMTS. Defaults to 60 if < 60
-          
+        snmp_max_repetitions:
+          type: integer
+          example: 10
+          nullable: false
+          description: Set SNMP max-repetitions to this value. If set to 0 the default value (30) will be used.
+
     CmtsStats:
       type: object
       readOnly: true

@@ -5,8 +5,8 @@ import (
 	"github.com/sedl/docsis-pnm/internal/types"
 )
 
-const cmtsQueryStr = "SELECT id, hostname, snmp_community, snmp_community_modem, disabled, poll_interval FROM cmts"
-const cmtsInsertStr = "INSERT INTO cmts (hostname, snmp_community, snmp_community_modem, disabled, poll_interval) VALUES ($1, $2, $3, $4, $5) RETURNING id"
+const cmtsQueryStr = "SELECT id, hostname, snmp_community, snmp_community_modem, disabled, poll_interval, snmp_max_repetitions FROM cmts"
+const cmtsInsertStr = "INSERT INTO cmts (hostname, snmp_community, snmp_community_modem, disabled, poll_interval, snmp_max_repetitions) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
 
 // InsertCMTS inserts a CMTSRecord and fills in the CMTSRecord.Id with the newly created database ID
 func (db *Postgres) InsertCMTS(cmts *types.CMTSRecord) (err error) {
@@ -21,7 +21,8 @@ func (db *Postgres) InsertCMTS(cmts *types.CMTSRecord) (err error) {
 		cmts.SNMPCommunity,
 		cmts.SNMPModemCommunity,
 		cmts.Disabled,
-		cmts.PollInterval)
+		cmts.PollInterval,
+		cmts.MaxRepetitions)
 	if err != nil {
 		return
 	}
