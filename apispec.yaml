@@ -542,7 +542,7 @@ components:
       properties:
         cmts_id:
           type: integer
-          format: uint32
+          format: int32
           example: 1
           readOnly: true
         hostname:
