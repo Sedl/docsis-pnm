@@ -6,7 +6,7 @@ import (
 )
 
 type CMTSQuery struct {
-	db *sql.DB
+	db   *sql.DB
 	rows *sql.Rows
 }
 
@@ -17,7 +17,7 @@ func (q *CMTSQuery) Close() error {
 	return nil
 }
 
-func NewCMTSQuery(conn *sql.DB, where string , args... interface{}) (*CMTSQuery, error){
+func NewCMTSQuery(conn *sql.DB, where string, args ...interface{}) (*CMTSQuery, error) {
 	mq := &CMTSQuery{conn, nil}
 
 	var query string
@@ -36,7 +36,7 @@ func NewCMTSQuery(conn *sql.DB, where string , args... interface{}) (*CMTSQuery,
 }
 
 func (q *CMTSQuery) Next() (*types.CMTSRecord, error) {
-	if ! q.rows.Next() {
+	if !q.rows.Next() {
 		return nil, nil
 	}
 
@@ -49,7 +49,8 @@ func (q *CMTSQuery) Next() (*types.CMTSRecord, error) {
 		&community,
 		&commModem,
 		&record.Disabled,
-		&record.PollInterval)
+		&record.PollInterval,
+		&record.MaxRepetitions)
 	if err != nil {
 		return nil, err
 	}

@@ -8,12 +8,13 @@ import (
 
 // CMTSRecord represents a CMTS database record
 type CMTSRecord struct {
-	Id                 int32 `json:"cmts_id"`
+	Id                 int32  `json:"cmts_id"`
 	Hostname           string `json:"hostname"`
 	SNMPCommunity      string `json:"snmp_community,omitempty"`
 	SNMPModemCommunity string `json:"snmp_community_modem,omitempty"`
 	Disabled           bool   `json:"disabled"`
 	PollInterval       int32  `json:"poll_interval"`
+	MaxRepetitions     uint32 `json:"snmp_max_repetitions"`
 }
 
 type CMTSUpstreamRecord struct {

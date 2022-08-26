@@ -35,7 +35,7 @@ type Cmts struct {
 	modemsOffline int32
 	config        *config.Config
 	stopWg        *sync.WaitGroup
-	dbSyncer	  *pgdbsyncer.PgDbSyncer
+	dbSyncer      *pgdbsyncer.PgDbSyncer
 }
 
 func (cmts *Cmts) ValueOfDbId() int32 {
@@ -51,12 +51,12 @@ func (cmts *Cmts) ValueOfModemsOffline() int32 {
 }
 
 func NewCmts(
-		dbRec *types.CMTSRecord,
-		dbInterface types.DbInterface,
-		modemPoller ModemPollWorkerInterface,
-		config *config.Config,
-		dbSyncer *pgdbsyncer.PgDbSyncer,
-		) (*Cmts, error) {
+	dbRec *types.CMTSRecord,
+	dbInterface types.DbInterface,
+	modemPoller ModemPollWorkerInterface,
+	config *config.Config,
+	dbSyncer *pgdbsyncer.PgDbSyncer,
+) (*Cmts, error) {
 	cmts := &Cmts{
 		upstreamCache:     db.NewCMTSUpstreamCache(),
 		DBBackend:         dbInterface,
@@ -67,7 +67,7 @@ func NewCmts(
 		stopChannel:       make(chan struct{}),
 		stopWg:            &sync.WaitGroup{},
 		dbSyncer:          dbSyncer,
-		modemList: 		   types.NewModemList(),
+		modemList:         types.NewModemList(),
 	}
 
 	cmts.Snmp = cmts.NewGoSNMP()
@@ -76,6 +76,13 @@ func NewCmts(
 }
 
 func (cmts *Cmts) NewGoSNMP() *gosnmp.GoSNMP {
+
+	var maxRepetitions uint32 = 30
+
+	if cmts.dbRec.MaxRepetitions > 0 {
+		maxRepetitions = cmts.dbRec.MaxRepetitions
+	}
+
 	return &gosnmp.GoSNMP{
 		Target:             cmts.dbRec.Hostname,
 		Community:          cmts.dbRec.SNMPCommunity,
@@ -84,7 +91,7 @@ func (cmts *Cmts) NewGoSNMP() *gosnmp.GoSNMP {
 		Port:               161,
 		MaxOids:            1,
 		Retries:            cmts.config.Snmp.Retries,
-		MaxRepetitions:     30,
+		MaxRepetitions:     maxRepetitions,
 		ExponentialTimeout: false,
 	}
 }
