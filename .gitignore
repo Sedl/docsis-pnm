@@ -7,3 +7,4 @@
 *.deb
 /debian/docsis-pnm/DEBIAN/control
 /debian/docsis-pnm/usr/bin/*
+.DS_Store
