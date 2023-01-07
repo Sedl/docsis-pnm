@@ -3,7 +3,7 @@ module github.com/sedl/docsis-pnm
 go 1.14
 
 require (
-	github.com/gorilla/mux v1.7.4
+	github.com/gorilla/mux v1.8.0
 	github.com/gosnmp/gosnmp v1.35.0
 	github.com/lib/pq v1.5.2
 	github.com/magiconair/properties v1.8.7 // indirect
