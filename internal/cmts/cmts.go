@@ -2,7 +2,6 @@ package cmts
 
 import (
 	"github.com/gosnmp/gosnmp"
-	"github.com/sedl/docsis-pnm/internal/config"
 	"github.com/sedl/docsis-pnm/internal/db"
 	"github.com/sedl/docsis-pnm/internal/modem"
 	"github.com/sedl/docsis-pnm/internal/pgdbsyncer"
@@ -33,7 +32,7 @@ type Cmts struct {
 	stopChannel   chan struct{}
 	modemsOnline  int32
 	modemsOffline int32
-	config        *config.Config
+	config        *types.Config
 	stopWg        *sync.WaitGroup
 	dbSyncer      *pgdbsyncer.PgDbSyncer
 }
@@ -54,7 +53,7 @@ func NewCmts(
 	dbRec *types.CMTSRecord,
 	dbInterface types.DbInterface,
 	modemPoller ModemPollWorkerInterface,
-	config *config.Config,
+	config *types.Config,
 	dbSyncer *pgdbsyncer.PgDbSyncer,
 ) (*Cmts, error) {
 	cmts := &Cmts{

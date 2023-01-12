@@ -26,7 +26,7 @@ func addCacheHeader(timestamp int64, w http.ResponseWriter) {
 	}
 }
 
-func addCountHeader(w http.ResponseWriter,count int) {
+func addCountHeader(w http.ResponseWriter, count int) {
 	w.Header().Set("X-Count", strconv.Itoa(count))
 }
 
@@ -68,4 +68,5 @@ func Register(router *mux.Router, manager *manager.Manager) {
 
 	router.HandleFunc("/upstreams", api.upstreams)
 	router.HandleFunc("/upstreams/{upstreamId:[0-9]+}", api.upstreamsById)
+
 }
