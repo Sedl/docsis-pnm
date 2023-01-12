@@ -4,10 +4,15 @@ import (
 	"errors"
 )
 
+type ApiConfig struct {
+	ListenAddress string `yaml:"listenaddress"`
+}
+
 type Config struct {
-	Snmp Snmp `yaml:"snmp"`
-	Db   Db   `yaml:"db"`
-	Tftp Tftp `yaml:"tftp"`
+	Snmp Snmp      `yaml:"snmp"`
+	Db   Db        `yaml:"db"`
+	Tftp Tftp      `yaml:"tftp"`
+	Api  ApiConfig `yaml:"api"`
 }
 
 func (c *Config) Validate() []error {

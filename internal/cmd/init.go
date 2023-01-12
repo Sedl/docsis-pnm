@@ -61,6 +61,10 @@ func CobraInit(cfg *types.Config) {
 	viper.BindPFlag("tftp.externaladdress", rootCmd.PersistentFlags().Lookup("tftp.externaladdress"))
 	viper.SetDefault("tftp.externaladdress", "")
 
+	rootCmd.PersistentFlags().String("api.listenaddress", "", "Set listen IP and port (default: 0.0.0.0:8080)")
+	viper.BindPFlag("api.listenaddress", rootCmd.PersistentFlags().Lookup("api.listenaddress"))
+	viper.SetDefault("api.listenaddress", "0.0.0.0:8080")
+
 	var runCmd = &cobra.Command{
 		Use:   "run",
 		Short: "Run data collection",

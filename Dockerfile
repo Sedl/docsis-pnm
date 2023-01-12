@@ -12,10 +12,9 @@ FROM alpine:3.14
 RUN mkdir /etc/docsis-pnm
 
 COPY --from=0 /go/src/app/cmd/docsis-pnm/docsis-pnm /usr/local/bin/docsis-pnm
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY docsis-pnm.toml.example /etc/docsis-pnm/docsis-pnm.toml
 
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
-
+ENTRYPOINT ["/usr/local/bin/docsis-pnm"]
+CMD ["--config=/etc/docsis-pnm/docsis-pnm.toml", "run"]
 
 EXPOSE 8080
