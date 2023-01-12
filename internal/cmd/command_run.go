@@ -23,8 +23,6 @@ func Run(cfg *types.Config) {
 		}
 		os.Exit(ErrConfig)
 	}
-	log.Println("RUN!")
-	fmt.Printf("%+v", cfg)
 
 	cmtsManager, err := manager.NewManager(cfg)
 	if err != nil {
