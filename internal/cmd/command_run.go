@@ -14,6 +14,7 @@ import (
 	"syscall"
 )
 
+// Run starts data collection from CMTS and modems
 func Run(cfg *types.Config) {
 	errs := cfg.Validate()
 	if len(errs) > 0 {
@@ -42,7 +43,7 @@ func Run(cfg *types.Config) {
 
 	log.Println("debug: init done")
 
-	server := api.NewApi(cmtsManager)
+	server := api.NewApi(cmtsManager, &cfg.Api)
 	wg := registerExitHandler(cmtsManager, server)
 
 	go func() {
@@ -60,6 +61,7 @@ func errorAndExit(err error) {
 	os.Exit(1)
 }
 
+// registerExitHandler is responsible for a safe shutdown of the application
 func registerExitHandler(manager *manager.Manager, server *http.Server) *sync.WaitGroup {
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
