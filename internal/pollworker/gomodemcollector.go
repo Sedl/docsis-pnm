@@ -2,7 +2,6 @@ package pollworker
 
 import (
 	"errors"
-	"github.com/sedl/docsis-pnm/internal/config"
 	"github.com/sedl/docsis-pnm/internal/modem"
 	"github.com/sedl/docsis-pnm/internal/types"
 	"log"
@@ -17,18 +16,18 @@ type PollWorker struct {
 	wg             *sync.WaitGroup
 	statError      uint64
 	statOK         uint64
-	config         *config.Snmp
+	config         *types.Snmp
 	dbModemUpdater types.ModemUpdaterInterface
 }
 
-func NewPollWorker(config *config.Snmp, modemUpdater types.ModemUpdaterInterface) *PollWorker {
+func NewPollWorker(config *types.Snmp, modemUpdater types.ModemUpdaterInterface) *PollWorker {
 	return &PollWorker{
 		requestChan:    make(chan *modem.Poller, 10000),
 		config:         config,
 		dbModemUpdater: modemUpdater,
 		WorkerCount:    config.WorkerCount,
 		ModemDataSink:  make(chan *types.ModemData, 10000),
-		wg: &sync.WaitGroup{},
+		wg:             &sync.WaitGroup{},
 	}
 }
 
@@ -53,7 +52,7 @@ func (p *PollWorker) Poll(request *modem.Poller) error {
 	return nil
 }
 
-func poll(req *modem.Poller) (*types.ModemData, error){
+func poll(req *modem.Poller) (*types.ModemData, error) {
 	err := req.Connect()
 	if err != nil {
 		return nil, err
@@ -76,7 +75,7 @@ func (p *PollWorker) collector() {
 		select {
 
 		case request, ok := <-p.requestChan:
-			if ! ok {
+			if !ok {
 				return
 			}
 			// log.Printf("debug: collecting data from modem %s (%s)\n", request.Mac.String(), request.Hostname)

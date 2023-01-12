@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"github.com/sedl/docsis-pnm/internal/config"
 	"github.com/sedl/docsis-pnm/internal/migration"
 	"github.com/sedl/docsis-pnm/internal/types"
 	"log"
@@ -13,21 +12,20 @@ import (
 )
 
 type Postgres struct {
-	conn    *sql.DB
-	timeout time.Duration
-	config *config.Db
+	conn          *sql.DB
+	timeout       time.Duration
+	config        *types.Db
 	modemDataChan chan *types.ModemData
-	connlock   sync.RWMutex
+	connlock      sync.RWMutex
 }
 
-
 // NewPostgres creates a new Postgres struct
-func NewPostgres(cfg config.Db) (*Postgres, error) {
+func NewPostgres(cfg types.Db) (*Postgres, error) {
 
 	db := &Postgres{
-		timeout:           time.Second * 10,
-		modemDataChan:     make(chan *types.ModemData, 10),
-		config:            &cfg,
+		timeout:       time.Second * 10,
+		modemDataChan: make(chan *types.ModemData, 10),
+		config:        &cfg,
 	}
 	return db, nil
 }
@@ -35,7 +33,7 @@ func NewPostgres(cfg config.Db) (*Postgres, error) {
 // Run starts all necessary goroutines
 func (db *Postgres) Run() {
 	// TODO make this configurable
-	go migration.GoMaintenanceWorker(db, time.Minute * 30)
+	go migration.GoMaintenanceWorker(db, time.Minute*30)
 }
 
 func (db *Postgres) GetConn() (dbc *sql.DB, err error) {
