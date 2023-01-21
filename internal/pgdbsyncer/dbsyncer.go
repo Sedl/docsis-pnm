@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/lib/pq"
 	"github.com/sedl/docsis-pnm/internal/db"
+	"github.com/sedl/docsis-pnm/internal/logger"
 	"github.com/sedl/docsis-pnm/internal/types"
-	"log"
 	"strings"
 	"sync"
 	"time"
@@ -44,7 +44,7 @@ func (m *PgDbSyncer) Run() error {
 		return err
 	}
 
-	log.Println("debug: starting modem_upstream copy goroutine")
+	logger.Debug("starting modem_upstream copy goroutine")
 	upstreamCopy := pq.CopyIn("modem_upstream",
 		"modem_id", "poll_time", "freq", "timing_offset", "tx_power")
 	m.copyUpstreams, err = db.NewCopyFrom(upstreamCopy, conn, 100, m.commitInterval)
@@ -173,7 +173,7 @@ func (m *PgDbSyncer) updateModemData() {
 			}
 			err := m.backend.UpdateFromModemData(mdata)
 			if err != nil {
-				log.Printf("error: can't get modem data for updating: %v\n", err)
+				logger.Errorf("error: can't get modem data for updating: %v", err)
 				continue
 			}
 
