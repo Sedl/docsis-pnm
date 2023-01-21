@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/sedl/docsis-pnm/internal/logger"
 	"github.com/sedl/docsis-pnm/internal/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"log"
 	"os"
 	"strings"
 )
@@ -65,6 +65,10 @@ func CobraInit(cfg *types.Config) {
 	viper.BindPFlag("api.listenaddress", rootCmd.PersistentFlags().Lookup("api.listenaddress"))
 	viper.SetDefault("api.listenaddress", "0.0.0.0:8080")
 
+	rootCmd.PersistentFlags().Bool("debug", false, "Enable debug mode (verbose logging)")
+	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
+	viper.SetDefault("debug", false)
+
 	var runCmd = &cobra.Command{
 		Use:   "run",
 		Short: "Run data collection",
@@ -112,7 +116,7 @@ func configInit(cfg *types.Config) {
 
 	// read configuration file
 	if err := viper.ReadInConfig(); err == nil {
-		log.Println("Using config file:", viper.ConfigFileUsed())
+		logger.Info(fmt.Sprint("Using config file: ", viper.ConfigFileUsed()))
 	}
 
 	viper.Unmarshal(cfg)

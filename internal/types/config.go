@@ -9,10 +9,11 @@ type ApiConfig struct {
 }
 
 type Config struct {
-	Snmp Snmp      `yaml:"snmp"`
-	Db   Db        `yaml:"db"`
-	Tftp Tftp      `yaml:"tftp"`
-	Api  ApiConfig `yaml:"api"`
+	Snmp  Snmp      `yaml:"snmp"`
+	Db    Db        `yaml:"db"`
+	Tftp  Tftp      `yaml:"tftp"`
+	Api   ApiConfig `yaml:"api"`
+	Debug bool      `yaml:"debug"`
 }
 
 func (c *Config) Validate() []error {

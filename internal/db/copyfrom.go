@@ -3,21 +3,21 @@ package db
 import (
 	"database/sql"
 	"github.com/lib/pq"
-	"log"
+	"github.com/sedl/docsis-pnm/internal/logger"
 	"strings"
 	"time"
 )
 
 type CopyFrom struct {
-	db *sql.DB
-	tx *sql.Tx
-	Stmt *sql.Stmt
-	query string
-	valueChan chan []interface{}
+	db             *sql.DB
+	tx             *sql.Tx
+	Stmt           *sql.Stmt
+	query          string
+	valueChan      chan []interface{}
 	commitInterval time.Duration
 }
 
-func NewCopyFrom (query string, dbconn *sql.DB, queueSize int, commitInterval time.Duration) (*CopyFrom, error) {
+func NewCopyFrom(query string, dbconn *sql.DB, queueSize int, commitInterval time.Duration) (*CopyFrom, error) {
 	tx, err := dbconn.Begin()
 	if err != nil {
 		return nil, err
@@ -44,22 +44,22 @@ func (m *CopyFrom) Run() {
 		case <-timer:
 			err := m.Commit()
 			if err != nil {
-				log.Fatal(err)
+				logger.Fatal(err.Error())
 			}
-			case data, ok := <- m.valueChan:
-				if ! ok {
-					m.commit()
-					return
+		case data, ok := <-m.valueChan:
+			if !ok {
+				m.commit()
+				return
+			}
+			_, err := m.Stmt.Exec(data...)
+			if err != nil {
+				logger.Errorf("CopyFrom insertion failed: %v", m.query)
+				if perr, ok := err.(*pq.Error); ok {
+					logger.Errorf("Error from Postgres: %v", perr.Code.Name())
+				} else {
+					logger.Errorf("%#v", err)
 				}
-				_, err := m.Stmt.Exec(data...)
-				if err != nil {
-					log.Printf("error: CopyFrom insertion failed: %v\n", m.query)
-					if perr, ok := err.(*pq.Error); ok {
-						log.Printf("error: Error from Postgres: %v\n", perr.Code.Name())
-					} else {
-						log.Printf("%#v\n", err)
-					}
-				}
+			}
 		}
 	}
 }
@@ -75,21 +75,21 @@ func (m *CopyFrom) Insert(values ...interface{}) {
 func (m *CopyFrom) commit() {
 	_, err := m.Stmt.Exec()
 	if err != nil {
-		log.Printf("Error while flushing \"COPY FROM\": %s\n", err)
+		logger.Errorf("Error while flushing \"COPY FROM\": %s\n", err)
 	}
 	err = m.Stmt.Close()
 	if err != nil {
-		log.Printf("Error while closing statement in COPY FROM: %s\n", err)
+		logger.Errorf("Error while closing statement in COPY FROM: %s\n", err)
 	}
 	err = m.tx.Commit()
 	if err != nil {
-		log.Printf("Error while commiting: %s\n", err)
+		logger.Errorf("Error while commiting: %s\n", err)
 	}
 }
 
 func (m *CopyFrom) Commit() error {
 
-    m.commit()
+	m.commit()
 
 	retries := 0
 	retryAfter := time.Second * 5
@@ -101,7 +101,7 @@ func (m *CopyFrom) Commit() error {
 		if err != nil {
 			if strings.Contains(err.Error(), "connection refused") {
 				retries++
-				log.Printf("error: connection to database refused. Retrying in %s. %d retries so far\n", retryAfter, retries)
+				logger.Errorf("connection to database refused. Retrying in %s. %d retries so far\n", retryAfter, retries)
 				time.Sleep(retryAfter)
 				continue
 			}
@@ -117,4 +117,3 @@ func (m *CopyFrom) Commit() error {
 
 	return nil
 }
-

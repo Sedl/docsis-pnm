@@ -3,8 +3,8 @@ package tftp
 import (
 	"errors"
 	"github.com/pin/tftp"
+	"github.com/sedl/docsis-pnm/internal/logger"
 	"io"
-	"log"
 	"net"
 	"sync"
 	"time"
@@ -33,18 +33,19 @@ func (s *Server) writeHandler(filename string, wt io.WriterTo) error {
 	}
 	buf := NewSafeBuffer(4 * Mebibyte)
 	byteCount, err := wt.WriteTo(buf)
-	log.Printf("TFTP: received file %s (%d bytes)\n", filename, byteCount)
+	logger.Infof("TFTP: received file %s (%d bytes)", filename, byteCount)
 	channel <- buf
 	return err
 }
 
 // ListenAndServe is a wrapper around tftp.ListenAndServe
 func (s *Server) ListenAndServe(addr string) error {
-	log.Printf("starting TFTP server using external IP address %s\n", s.ExternalIp)
+	logger.Infof("starting TFTP server using external IP address %s", s.ExternalIp)
 	return s.Server.ListenAndServe(addr)
 }
 
 // TODO implement Context
+
 // WaitForFile blocks until we receive a file with the given name via TFTP, or the time runs out
 func (s *Server) WaitForFile(filename string, timeout time.Duration) (*SafeBuffer, error) {
 	channel := make(chan *SafeBuffer)

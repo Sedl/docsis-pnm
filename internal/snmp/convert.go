@@ -3,7 +3,7 @@ package snmp
 import (
 	"fmt"
 	"github.com/gosnmp/gosnmp"
-	"log"
+	"github.com/sedl/docsis-pnm/internal/logger"
 	"math"
 	"strconv"
 	"strings"
@@ -54,7 +54,7 @@ func ToUint(result *gosnmp.SnmpPDU, snmp *gosnmp.GoSNMP) (uint, error) {
 	case gosnmp.Gauge32:
 		return result.Value.(uint), nil
 	default:
-		log.Printf("invalid data type (%#x) in snmp response from %s (%s). expecting type gauge32 (0x42).",
+		logger.Errorf("invalid data type (%#x) in snmp response from %s (%s). expecting type gauge32 (0x42).",
 			result.Type, snmp.Target, result.Name)
 		return 0, IntegerConversionError
 	}
@@ -70,7 +70,7 @@ func ToUint32(result *gosnmp.SnmpPDU) (uint32, error) {
 		return uint32(result.Value.(int)), nil
 	default:
 		t := int(result.Type)
-		log.Printf("invalid data type (0x%x) in snmp response (%s). expecting type gauge32 (0x42).",
+		logger.Errorf("invalid data type (0x%x) in snmp response (%s). expecting type gauge32 (0x42).",
 			t, result.Name)
 		return 0, IntegerConversionError
 	}
@@ -93,7 +93,7 @@ func ToUint64(result *gosnmp.SnmpPDU) (uint64, error) {
 	case gosnmp.Counter64:
 		return result.Value.(uint64), nil
 	default:
-		log.Printf("invalid data type (%#x) in snmp response (%s). expecting type Counter64 (0x46).",
+		logger.Errorf("invalid data type (%#x) in snmp response (%s). expecting type Counter64 (0x46).",
 			result.Type, result.Name)
 		return 0, IntegerConversionError
 	}
@@ -104,7 +104,7 @@ func ToInt(result *gosnmp.SnmpPDU) (int, error) {
 	case gosnmp.Integer:
 		return result.Value.(int), nil
 	default:
-		log.Printf("invalid data type (%#x) in snmp response (%s). expecting type integer (0x42).",
+		logger.Errorf("invalid data type (%#x) in snmp response (%s). expecting type integer (0x42).",
 			result.Type, result.Name)
 		return 0, IntegerConversionError
 	}
@@ -134,4 +134,3 @@ func ToInt32(result *gosnmp.SnmpPDU) (int32, error) {
 			result.Type, result.Name)
 	}
 }
-

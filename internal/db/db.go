@@ -3,9 +3,9 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"github.com/sedl/docsis-pnm/internal/logger"
 	"github.com/sedl/docsis-pnm/internal/migration"
 	"github.com/sedl/docsis-pnm/internal/types"
-	"log"
 	"strings"
 	"sync"
 	"time"
@@ -52,7 +52,7 @@ func (db *Postgres) GetConn() (dbc *sql.DB, err error) {
 	for i := 0; i < 20; i++ {
 		db.conn, err = sql.Open("postgres", db.config.Connstr)
 		if err != nil {
-			log.Printf("Connection error. Retrying in %s: %s\n", db.timeout, err)
+			logger.Errorf("Connection error. Retrying in %s: %s", db.timeout, err)
 			time.Sleep(db.timeout)
 			db.conn = nil
 			continue

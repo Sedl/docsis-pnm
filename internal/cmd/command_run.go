@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/sedl/docsis-pnm/internal/api"
+	"github.com/sedl/docsis-pnm/internal/logger"
 	"github.com/sedl/docsis-pnm/internal/manager"
 	"github.com/sedl/docsis-pnm/internal/types"
+	"go.uber.org/zap/zapcore"
 	"log"
 	"net/http"
 	"os"
@@ -22,6 +24,10 @@ func Run(cfg *types.Config) {
 			log.Printf("CONFIG_ERROR: %s", err.Error())
 		}
 		os.Exit(ErrConfig)
+	}
+
+	if cfg.Debug {
+		logger.SetLevel(zapcore.DebugLevel)
 	}
 
 	cmtsManager, err := manager.NewManager(cfg)
